@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bai_Jamjuree, IBM_Plex_Sans_Thai } from "next/font/google";
 import "./globals.css";
+import { farm, seo, siteUrl } from "@/lib/site";
 
 const baiJamjuree = Bai_Jamjuree({
   variable: "--font-bai-jamjuree",
@@ -15,9 +16,22 @@ const plexThai = IBM_Plex_Sans_Thai({
 });
 
 export const metadata: Metadata = {
-  title: "Halfmoon Border Collie Thailand - ฟาร์มบอร์เดอร์คอลลี่ จ.ระนอง",
-  description:
-    "ฟาร์มบอร์เดอร์คอลลี่ จ.ระนอง ลูกสุนัขมีใบเพดดิกรีจากสมาคมพัฒนาพันธุ์สุนัขแห่งประเทศไทย (FCI) วัคซีน 2 เข็ม และผ่านการฝึกพื้นฐานก่อนส่งมอบ",
+  metadataBase: new URL(siteUrl),
+  title: seo.title,
+  description: seo.description,
+  keywords: seo.keywords,
+  applicationName: farm.name,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "th_TH",
+    url: "/",
+    siteName: farm.name,
+    title: seo.title,
+    description: seo.description,
+  },
+  twitter: { card: "summary_large_image", title: seo.title, description: seo.description },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
