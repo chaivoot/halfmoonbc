@@ -163,3 +163,4 @@ Migrations: ไฟล์ SQL ใน `db/migrations/` รันอัตโนม
 5. หน้า /admin: login, CRUD, อัปโหลดรูป
 6. SEO + schema
 7. ทดสอบบนมือถือ, ส่งคู่มือสั้นๆ วิธีอัปโหลดให้เจ้าของฟาร์ม
+   - คู่มืออยู่ที่ `/admin/help` (`src/app/admin/help/page.tsx`) เปิดได้โดยไม่ต้องล็อกอิน ภาพหน้าจออยู่ใน `public/admin-help/` ถ้าหน้า admin เปลี่ยนให้อัปเดตคู่มือด้วย

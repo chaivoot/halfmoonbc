@@ -22,6 +22,14 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
         {params.password === "changed" && <Notice>เปลี่ยนรหัสผ่านเรียบร้อยแล้ว</Notice>}
         {params.deleted === "1" && <Notice>ลบข้อมูลเรียบร้อยแล้ว</Notice>}
 
+        <Link
+          href="/admin/help"
+          className="flex min-h-12 items-center justify-between gap-3 rounded-2xl bg-yellow-soft px-4 py-3 text-[15px] font-semibold text-ink"
+        >
+          วิธีเพิ่มน้อง อัปโหลดรูป และเปลี่ยนสถานะ
+          <span className="shrink-0 underline underline-offset-4">ดูวิธีใช้</span>
+        </Link>
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-heading m-0 text-3xl font-bold">สุนัขทั้งหมด</h1>
           <Link href={`/admin/dogs/new${category ? `?c=${category}` : ""}`} className={primaryButton}>
