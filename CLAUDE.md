@@ -23,7 +23,7 @@
 - Next.js (App Router) + TypeScript + Tailwind CSS
 - Neon Postgres (ข้อมูลสุนัข) ต่อผ่าน Vercel integration, driver `postgres` (`src/lib/db.ts`)
 - Vercel Blob (รูปที่อัปจาก admin)
-- ล็อกอิน admin: เขียนเอง (ยังรอเจ้าของเลือกวิธี)
+- ล็อกอิน admin: เขียนเอง (`src/lib/auth.ts`) scrypt + session ใน DB, cookie httpOnly
 - Deploy: Vercel
 - รูป: ใช้ `next/image`, ย่อรูปฝั่ง client ก่อนอัปโหลด (กว้างสุด ~1600px, WebP/JPEG) เพราะเพื่อนจะอัปจากมือถือ
 
@@ -109,7 +109,8 @@ Early Neurological Stimulation (ENS), การอยู่ในพื้นท
 ผู้ใช้: เจ้าของฟาร์ม (ไม่ถนัดเทคนิค ใช้มือถือเป็นหลัก) ต้องง่ายที่สุด
 
 ### ฟีเจอร์
-- ล็อกอิน (email + password แยกคน หรือรหัสเดียวร่วมกัน - ถามเจ้าของก่อน)
+- ล็อกอินด้วย username `admin` + รหัสผ่าน (admin มีคนเดียว) บังคับเปลี่ยนรหัสตอนล็อกอินครั้งแรก, ล็อกชั่วคราวเมื่อใส่ผิด 10 ครั้งใน 15 นาที
+- ลืมรหัส: รีเซ็ตผ่านอีเมล (ยังไม่ได้ทำ รออีเมลจากเจ้าของ ตาราง `admins` มีช่อง `email` เผื่อไว้แล้ว)
 - รายการสุนัขทั้งหมด กรองตามหมวด
 - เพิ่ม / แก้ไข / ซ่อน / ลบ สุนัข
 - อัปโหลดหลายรูปพร้อมกันจากมือถือ (ถ่ายรูปหรือเลือกจากคลัง), เลือกรูปปก, ลากเรียงลำดับ
@@ -127,14 +128,14 @@ Early Neurological Stimulation (ENS), การอยู่ในพื้นท
 `dog_photos`
 - id, dog_id (fk), storage_path, is_cover (bool), sort_order
 
-Security: ไม่มี RLS เพราะ DB เข้าถึงได้จาก server เท่านั้น หน้า public query เฉพาะ `is_published = true` ทุก server action ที่เขียนข้อมูลต้องเช็ค session admin เอง
+Security: ไม่มี RLS เพราะ DB เข้าถึงได้จาก server เท่านั้น หน้า public query เฉพาะ `is_published = true` ทุกหน้า admin และทุก server action ต้องเรียก `requireAdmin()` เอง (server action เป็น endpoint สาธารณะ เช็คที่ layout อย่างเดียวไม่พอ)
+อัปโหลดรูป: browser ย่อรูปแล้วอัปตรงไป Vercel Blob (store แบบ public) ผ่าน token จาก `/api/admin/upload` แล้วค่อยบันทึก URL ลง DB ด้วย `addPhotosAction`
 
 Migrations: ไฟล์ SQL ใน `db/migrations/` รันอัตโนมัติก่อน `next build` (`scripts/migrate.mjs`) แต่ละไฟล์รันครั้งเดียว ห้ามแก้ไฟล์ที่ apply แล้ว ให้เพิ่มไฟล์ใหม่แทน
 `dog_photos.storage_path` เป็น path ใน `public/` (รูปจากเว็บเดิม) หรือ URL เต็มของ Vercel Blob
 
 ### Phase 2 (ยังไม่ยืนยัน ถามเจ้าของก่อนทำ)
 - แก้ราคา, FAQ, ข้อความหน้าแรกจาก admin (ตาราง `site_settings`)
-- หลาย admin
 
 ## 6. SEO / Local
 
@@ -148,7 +149,7 @@ Migrations: ไฟล์ SQL ใน `db/migrations/` รันอัตโนม
 - รูปจริง: พ่อแม่พันธุ์, ลูกสุนัข, บรรยากาศฟาร์ม, ใบรับรองสมาคมฯ
 - ที่อยู่ / พิกัดฟาร์มสำหรับ Google Maps
 - โดเมน
-- วิธีล็อกอิน admin และจำนวนคนที่ใช้
+- อีเมลสำหรับรีเซ็ตรหัสผ่าน admin
 
 ## 8. ลำดับงาน
 
