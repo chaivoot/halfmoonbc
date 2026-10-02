@@ -30,10 +30,14 @@ export const trust = [
   { big: "LINE กลุ่ม", small: "ดูแลต่อหลังรับน้อง" },
 ];
 
-export const puppyBenefits = [
+export const puppyBenefits: { title: string; desc: string; link?: { href: string; label: string } }[] = [
   { title: "ใบเพดดิกรี", desc: "จดทะเบียนจากสมาคมพัฒนาพันธุ์สุนัขแห่งประเทศไทย" },
   { title: "วัคซีน 2 เข็ม", desc: "ครบก่อนส่งมอบเมื่ออายุ 2 เดือน" },
-  { title: "การฝึกพื้นฐาน", desc: "ปูพื้นฐานนิสัยและระบบประสาทตั้งแต่แรกเกิด (ดูรายการฝึก)" },
+  {
+    title: "การฝึกพื้นฐาน",
+    desc: "ปูพื้นฐานนิสัยและระบบประสาทตั้งแต่แรกเกิด (ดูรายการฝึก)",
+    link: { href: "https://www.dogbooster.net/", label: "กดดูรายละเอียดการฝึก" },
+  },
   { title: "ไลน์กลุ่มผู้ปกครอง", desc: "ปรึกษาฟาร์มและผู้เลี้ยงรุ่นก่อนได้ตลอด" },
 ];
 
@@ -83,3 +87,28 @@ export const faqs = [
     a: "ฟาร์มมีไลน์กลุ่มผู้ปกครองของน้องๆ ตั้งแต่รุ่นแรกถึงรุ่นปัจจุบัน ไว้แลกเปลี่ยน สอบถาม และติดตามความน่ารัก เราจะดึงเข้ากลุ่มทันทีเมื่อส่งมอบน้องเรียบร้อย",
   },
 ];
+
+// Production URL for canonical links, sitemap and structured data. Vercel sets
+// VERCEL_PROJECT_PRODUCTION_URL, so this follows a custom domain once one is added.
+export const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "https://halfmoonbc.vercel.app");
+
+export const seo = {
+  title: "Halfmoon Border Collie Thailand - ฟาร์มบอร์เดอร์คอลลี่ จ.ระนอง",
+  description:
+    "ฟาร์มบอร์เดอร์คอลลี่ จ.ระนอง จดทะเบียนกับสมาคมพัฒนาพันธุ์สุนัขแห่งประเทศไทย (FCI) ลูกสุนัขบอร์เดอร์คอลลี่มีใบเพดดิกรี วัคซีน 2 เข็ม ฝึกพื้นฐานก่อนส่งมอบ ราคาเริ่มต้น 35,000 บาท ส่งฟรีกรุงเทพฯ และปริมณฑล",
+  keywords: [
+    "บอร์เดอร์คอลลี่",
+    "ฟาร์มบอร์เดอร์คอลลี่",
+    "ลูกสุนัขบอร์เดอร์คอลลี่",
+    "ลูกสุนัขบอร์เดอร์คอลลี่ ระนอง",
+    "บอร์เดอร์คอลลี่ ราคา",
+    "border collie thailand",
+    "border collie",
+    "Halfmoon Border Collie",
+    "Hero Pet Farm",
+  ],
+};

@@ -1,9 +1,11 @@
 import Image from "next/image";
 import { Header, Wordmark } from "@/components/header";
 import { FamilyGallery } from "@/components/family-gallery";
+import { JsonLd } from "@/components/json-ld";
 import {
   ChatIcon,
   CheckIcon,
+  ExternalIcon,
   FacebookIcon,
   InstagramIcon,
   MapPinIcon,
@@ -41,6 +43,7 @@ export default async function Home() {
 
   return (
     <>
+      <JsonLd />
       <Header />
       <main>
         {/* HERO */}
@@ -224,6 +227,16 @@ export default async function Home() {
                     <div>
                       <div className="font-semibold">{b.title}</div>
                       <div className="text-[15px] text-text-2">{b.desc}</div>
+                      {b.link && (
+                        <a
+                          href={b.link.href}
+                          {...external}
+                          className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-black underline underline-offset-4 hover:text-ink"
+                        >
+                          {b.link.label}
+                          <ExternalIcon size={16} />
+                        </a>
+                      )}
                     </div>
                   </li>
                 ))}
