@@ -18,17 +18,19 @@
 - หลัง deploy ให้บอกว่าควรเช็คอะไรบน production
 - ข้อความภาษาไทยบนเว็บ: ไม่ใช้ em dash (—) ใช้ hyphen (-) แทน และไม่ใช้อัญประกาศพร่ำเพรื่อ
 
-## 2. Tech stack (เสนอ ถ้าจะเปลี่ยนให้ถามก่อน)
+## 2. Tech stack (ถ้าจะเปลี่ยนให้ถามก่อน)
 
 - Next.js (App Router) + TypeScript + Tailwind CSS
-- Supabase: Postgres (ข้อมูลสุนัข), Storage (รูป), Auth (ล็อกอิน admin)
+- Neon Postgres (ข้อมูลสุนัข) ต่อผ่าน Vercel integration, driver `postgres` (`src/lib/db.ts`)
+- Vercel Blob (รูปที่อัปจาก admin)
+- ล็อกอิน admin: เขียนเอง (ยังรอเจ้าของเลือกวิธี)
 - Deploy: Vercel
 - รูป: ใช้ `next/image`, ย่อรูปฝั่ง client ก่อนอัปโหลด (กว้างสุด ~1600px, WebP/JPEG) เพราะเพื่อนจะอัปจากมือถือ
 
 ขั้นที่เจ้าของโปรเจคต้องทำเอง (ให้ Claude Code บอกทีละขั้นเมื่อถึงเวลา):
-1. สร้าง Supabase project แล้วส่ง URL + anon key ให้ (service role key ใส่ใน Vercel env เท่านั้น ห้าม commit)
+1. เชื่อม Neon กับโปรเจคใน Vercel (Storage tab) - ทำแล้ว ค่า `DATABASE_URL` ฯลฯ ถูกใส่ใน Vercel env อัตโนมัติ ห้าม commit
 2. Import repo เข้า Vercel และใส่ Environment Variables
-3. สร้างบัญชี admin ใน Supabase Auth
+3. สร้าง Vercel Blob store และเชื่อมกับโปรเจค (ก่อนทำหน้า admin)
 
 ## 3. Design
 
@@ -107,7 +109,7 @@ Early Neurological Stimulation (ENS), การอยู่ในพื้นท
 ผู้ใช้: เจ้าของฟาร์ม (ไม่ถนัดเทคนิค ใช้มือถือเป็นหลัก) ต้องง่ายที่สุด
 
 ### ฟีเจอร์
-- ล็อกอินด้วย Supabase Auth (email + password หรือ magic link - ถามเจ้าของก่อน)
+- ล็อกอิน (email + password แยกคน หรือรหัสเดียวร่วมกัน - ถามเจ้าของก่อน)
 - รายการสุนัขทั้งหมด กรองตามหมวด
 - เพิ่ม / แก้ไข / ซ่อน / ลบ สุนัข
 - อัปโหลดหลายรูปพร้อมกันจากมือถือ (ถ่ายรูปหรือเลือกจากคลัง), เลือกรูปปก, ลากเรียงลำดับ
@@ -125,7 +127,10 @@ Early Neurological Stimulation (ENS), การอยู่ในพื้นท
 `dog_photos`
 - id, dog_id (fk), storage_path, is_cover (bool), sort_order
 
-Security: เปิด RLS, public อ่านได้เฉพาะ `is_published = true`, เขียนได้เฉพาะ user ที่ล็อกอินและอยู่ในรายชื่อ admin
+Security: ไม่มี RLS เพราะ DB เข้าถึงได้จาก server เท่านั้น หน้า public query เฉพาะ `is_published = true` ทุก server action ที่เขียนข้อมูลต้องเช็ค session admin เอง
+
+Migrations: ไฟล์ SQL ใน `db/migrations/` รันอัตโนมัติก่อน `next build` (`scripts/migrate.mjs`) แต่ละไฟล์รันครั้งเดียว ห้ามแก้ไฟล์ที่ apply แล้ว ให้เพิ่มไฟล์ใหม่แทน
+`dog_photos.storage_path` เป็น path ใน `public/` (รูปจากเว็บเดิม) หรือ URL เต็มของ Vercel Blob
 
 ### Phase 2 (ยังไม่ยืนยัน ถามเจ้าของก่อนทำ)
 - แก้ราคา, FAQ, ข้อความหน้าแรกจาก admin (ตาราง `site_settings`)
@@ -149,7 +154,7 @@ Security: เปิด RLS, public อ่านได้เฉพาะ `is_publ
 
 1. Scaffold Next.js + Tailwind + design tokens, push + merge main, ต่อ Vercel
 2. หน้าสาธารณะแบบ static ตามดีไซน์ (ใช้ placeholder รูป)
-3. ต่อ Supabase: schema, RLS, seed พ่อแม่พันธุ์ 5 ตัว
+3. ต่อ Neon: schema, seed พ่อแม่พันธุ์ 5 ตัว และรูปแกลเลอรีจากเว็บเดิม
 4. ดึงข้อมูลพ่อแม่พันธุ์และแกลเลอรีจาก DB
 5. หน้า /admin: login, CRUD, อัปโหลดรูป
 6. SEO + schema

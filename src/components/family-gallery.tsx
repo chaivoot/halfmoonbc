@@ -56,18 +56,23 @@ export function FamilyGallery({ dogs }: { dogs: Dog[] }) {
         aria-labelledby={`tab-${tab}`}
         className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-3.5"
       >
+        {shown.length === 0 && (
+          <p className="col-span-full m-0 text-text-2">ยังไม่มีรูปในหมวดนี้</p>
+        )}
         {shown.map((d) => (
           <figure
             key={d.id}
             className="relative m-0 aspect-square overflow-hidden rounded-2xl bg-placeholder"
           >
-            <Image
-              src={d.coverPhoto}
-              alt={d.name ? `${d.name} ${d.nameTh ?? ""}`.trim() : "น้องบอร์เดอร์คอลลี่จาก Halfmoon"}
-              fill
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover"
-            />
+            {d.coverPhoto && (
+              <Image
+                src={d.coverPhoto}
+                alt={d.name ? `${d.name} ${d.nameTh ?? ""}`.trim() : "น้องบอร์เดอร์คอลลี่จาก Halfmoon"}
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw"
+                className="object-cover"
+              />
+            )}
             {(d.status || d.name) && (
               <figcaption className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-2">
                 {d.name ? (

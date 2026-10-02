@@ -11,7 +11,8 @@ import {
   PlusIcon,
   ShieldCheckIcon,
 } from "@/components/icons";
-import { family, parents, sexLabel } from "@/lib/dogs";
+import { sexLabel } from "@/lib/dogs";
+import { getFamily, getParents } from "@/lib/queries";
 import {
   faqs,
   farm,
@@ -32,7 +33,12 @@ const latin = "tracking-[0.12em]";
 const h2 = "font-heading m-0 text-[30px] font-bold leading-[1.2] md:text-[40px]";
 const external = { target: "_blank", rel: "noopener noreferrer" } as const;
 
-export default function Home() {
+// Fallback refresh; admin saves revalidate the page immediately.
+export const revalidate = 3600;
+
+export default async function Home() {
+  const [parents, family] = await Promise.all([getParents(), getFamily()]);
+
   return (
     <>
       <Header />
@@ -167,13 +173,15 @@ export default function Home() {
                   className="flex flex-col overflow-hidden rounded-[22px] border border-border bg-surface"
                 >
                   <div className="relative aspect-[4/3] bg-placeholder">
-                    <Image
-                      src={p.coverPhoto}
-                      alt={`${p.name} (${p.nameTh}) บอร์เดอร์คอลลี่สี ${p.color}`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
-                      className="object-cover"
-                    />
+                    {p.coverPhoto && (
+                      <Image
+                        src={p.coverPhoto}
+                        alt={`${p.name}${p.nameTh ? ` (${p.nameTh})` : ""} บอร์เดอร์คอลลี่${p.color ? `สี ${p.color}` : ""}`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+                        className="object-cover"
+                      />
+                    )}
                   </div>
                   <div className="flex flex-col gap-2.5 p-[22px]">
                     <div className="flex items-baseline justify-between gap-3">
