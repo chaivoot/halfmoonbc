@@ -29,3 +29,10 @@ export const galleryTabs = [
   { id: "young", label: "Young" },
   { id: "adult", label: "Adult" },
 ] as const;
+
+export const categoryLabel: Record<DogCategory, string> = {
+  parent: "พ่อแม่พันธุ์",
+  newborn: "New born",
+  young: "Young",
+  adult: "Adult",
+};
