@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { type Dog, galleryTabs, statusLabel } from "@/lib/dogs";
+import { farm } from "@/lib/site";
 
 type TabId = (typeof galleryTabs)[number]["id"];
 
@@ -14,7 +15,10 @@ const statusStyle = {
 
 export function FamilyGallery({ dogs }: { dogs: Dog[] }) {
   const [tab, setTab] = useState<TabId>("newborn");
-  const shown = dogs.filter((d) => d.category === tab);
+  const [availableOnly, setAvailableOnly] = useState(false);
+  const inTab = dogs.filter((d) => d.category === tab);
+  const availableCount = inTab.filter((d) => d.status === "available").length;
+  const shown = availableOnly ? inTab.filter((d) => d.status === "available") : inTab;
 
   return (
     <div className="flex flex-col gap-8">
@@ -50,15 +54,48 @@ export function FamilyGallery({ dogs }: { dogs: Dog[] }) {
         </div>
       </div>
 
+      <button
+        type="button"
+        aria-pressed={availableOnly}
+        aria-controls="family-panel"
+        onClick={() => setAvailableOnly((v) => !v)}
+        className="-mt-3 inline-flex min-h-11 cursor-pointer items-center gap-3 self-start rounded-full bg-bg py-1.5 pr-4 pl-1.5 text-[15px] font-semibold text-ink"
+      >
+        <span
+          aria-hidden="true"
+          className={`relative h-7 w-12 rounded-full transition-colors ${availableOnly ? "bg-black" : "bg-border"}`}
+        >
+          <span
+            className={`absolute top-1 left-1 size-5 rounded-full bg-white transition-transform ${
+              availableOnly ? "translate-x-5 bg-yellow" : ""
+            }`}
+          />
+        </span>
+        ดูเฉพาะน้องที่ว่าง ({availableCount})
+      </button>
+
       <div
         id="family-panel"
         role="tabpanel"
         aria-labelledby={`tab-${tab}`}
         className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-3.5"
       >
-        {shown.length === 0 && (
-          <p className="col-span-full m-0 text-text-2">ยังไม่มีรูปในหมวดนี้</p>
-        )}
+        {shown.length === 0 &&
+          (availableOnly ? (
+            <div className="col-span-full flex flex-col items-start gap-3 rounded-2xl bg-bg p-6">
+              <p className="m-0 text-text-2">ตอนนี้ยังไม่มีน้องที่ว่างในหมวดนี้ ทักมาเช็คคิวครอกถัดไปได้เลย</p>
+              <a
+                href={farm.lineUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-12 items-center rounded-full bg-black px-6 font-semibold text-white hover:bg-ink"
+              >
+                เช็คคิวทาง LINE
+              </a>
+            </div>
+          ) : (
+            <p className="col-span-full m-0 text-text-2">ยังไม่มีรูปในหมวดนี้</p>
+          ))}
         {shown.map((d) => (
           <figure
             key={d.id}
