@@ -144,14 +144,14 @@ Migrations: ไฟล์ SQL ใน `db/migrations/` รันอัตโนม
 - sitemap.xml, robots.txt
 - คีย์เวิร์ดหลัก: บอร์เดอร์คอลลี่, ฟาร์มบอร์เดอร์คอลลี่, ลูกสุนัขบอร์เดอร์คอลลี่ ระนอง, border collie thailand
 - ทำแล้ว: metadata/keywords ใน `src/lib/site.ts` (`seo`), JSON-LD ใน `src/components/json-ld.tsx`, `src/app/robots.ts`, `src/app/sitemap.ts`, OG image และ icon เป็นไฟล์ใน `src/app/`
-- URL หลักมาจาก `siteUrl` (ใช้ `VERCEL_PROJECT_PRODUCTION_URL` อัตโนมัติ) พอผูกโดเมนจริงใน Vercel แล้วจะเปลี่ยนตามเอง หรือตั้ง `NEXT_PUBLIC_SITE_URL` บังคับได้
+- โดเมนจริง: https://halfmoonbordercollie.com (จดผ่าน Vercel/Name.com, www redirect ไป apex โดย Vercel) `halfmoonbc.vercel.app` redirect มาที่โดเมนจริงใน `next.config.ts`
+- URL หลักมาจาก `siteUrl` (ใช้ `VERCEL_PROJECT_PRODUCTION_URL` อัตโนมัติ, fallback เป็นโดเมนจริง) หรือตั้ง `NEXT_PUBLIC_SITE_URL` บังคับได้
 - FAQ ใน JSON-LD ต้องตรงกับที่แสดงบนหน้าเว็บเสมอ (ใช้ `faqs` ชุดเดียวกัน)
 
 ## 7. ข้อมูลที่ยังขาด (ถามเจ้าของ อย่าเดา)
 
 - รูปจริง: พ่อแม่พันธุ์, ลูกสุนัข, บรรยากาศฟาร์ม, ใบรับรองสมาคมฯ
 - ที่อยู่ / พิกัดฟาร์มสำหรับ Google Maps
-- โดเมน
 - อีเมลสำหรับรีเซ็ตรหัสผ่าน admin
 
 ## 8. ลำดับงาน

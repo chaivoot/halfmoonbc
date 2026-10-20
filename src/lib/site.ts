@@ -94,7 +94,7 @@ export const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "https://halfmoonbc.vercel.app");
+    : "https://halfmoonbordercollie.com");
 
 export const seo = {
   title: "Halfmoon Border Collie Thailand - ฟาร์มบอร์เดอร์คอลลี่ จ.ระนอง",
