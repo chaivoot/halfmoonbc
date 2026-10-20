@@ -54,7 +54,7 @@ export default async function HelpPage() {
         <Step n={1} title="เข้าสู่ระบบ">
           <ol>
             <li>
-              เปิด <b>halfmoonbc.vercel.app/admin</b> ในมือถือ
+              เปิด <b>halfmoonbordercollie.com/admin</b> ในมือถือ
             </li>
             <li>
               ชื่อผู้ใช้ <b>admin</b> ใส่รหัสผ่าน แล้วกด <b>เข้าสู่ระบบ</b>
