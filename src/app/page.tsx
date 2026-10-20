@@ -378,7 +378,19 @@ export default async function Home() {
           <div className="text-bg">
             <Wordmark dark />
           </div>
-          <span>© 2026 Halfmoon Border Collie Thailand · โปรเจคของ Hero Pet Farm · ระนอง ประเทศไทย</span>
+          <div className="flex flex-col gap-1 md:items-end">
+            <span>© 2026 Halfmoon Border Collie Thailand · โปรเจคของ Hero Pet Farm · ระนอง ประเทศไทย</span>
+            <span>
+              Developed by{" "}
+              <a
+                href="https://fundamental.co.th"
+                {...external}
+                className="inline-flex min-h-11 items-center font-semibold text-bg underline-offset-4 hover:text-yellow hover:underline"
+              >
+                fundamental
+              </a>
+            </span>
+          </div>
         </div>
       </footer>
 
