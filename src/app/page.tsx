@@ -382,11 +382,7 @@ export default async function Home() {
             <span>© 2026 Halfmoon Border Collie Thailand · โปรเจคของ Hero Pet Farm · ระนอง ประเทศไทย</span>
             <span>
               Website by{" "}
-              <a
-                href="https://dogsanook.com"
-                {...external}
-                className="inline-flex min-h-11 items-center font-semibold text-bg underline-offset-4 hover:text-yellow hover:underline"
-              >
+              <a href="https://dogsanook.com" {...external} className="text-inherit no-underline">
                 หมาสนุก
               </a>
             </span>
