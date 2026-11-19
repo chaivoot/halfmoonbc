@@ -16,11 +16,11 @@ export const mapsEmbedUrl = `https://www.google.com/maps?q=${farm.geo.lat},${far
 export const mapsLinkUrl = `https://www.google.com/maps/search/?api=1&query=${farm.geo.lat},${farm.geo.lng}`;
 
 export const navLinks = [
-  { href: "#about", label: "เกี่ยวกับฟาร์ม" },
-  { href: "#parents", label: "พ่อแม่พันธุ์" },
-  { href: "#puppies", label: "ลูกสุนัข" },
-  { href: "#family", label: "Halfmoon Family" },
-  { href: "#faq", label: "คำถามที่พบบ่อย" },
+  { href: "/#about", label: "เกี่ยวกับฟาร์ม" },
+  { href: "/#parents", label: "พ่อแม่พันธุ์" },
+  { href: "/#puppies", label: "ลูกสุนัข" },
+  { href: "/#family", label: "Halfmoon Family" },
+  { href: "/#faq", label: "คำถามที่พบบ่อย" },
 ];
 
 export const trust = [

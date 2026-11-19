@@ -17,7 +17,32 @@ const optional = (fd: FormData, key: string) => str(fd, key) || null;
 
 function refreshSite() {
   revalidatePath("/");
+  revalidatePath("/dogs/[slug]", "page");
+  revalidatePath("/sitemap.xml");
   revalidatePath("/admin", "layout");
+}
+
+const toSlug = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+// Give a dog its page URL the first time it has an English name. An existing
+// slug is never changed, so links already shared keep working after a rename.
+async function ensureSlug(id: string, name: string) {
+  const base = toSlug(name);
+  if (!base) return;
+  const [dog] = await sql<{ slug: string | null }[]>`select slug from dogs where id = ${id}`;
+  if (!dog || dog.slug) return;
+  const taken = new Set(
+    (await sql<{ slug: string }[]>`
+      select slug from dogs where slug = ${base} or slug like ${base + "-%"}
+    `).map((r) => r.slug),
+  );
+  let slug = base;
+  for (let n = 2; taken.has(slug); n++) slug = `${base}-${n}`;
+  await sql`update dogs set slug = ${slug} where id = ${id} and slug is null`;
 }
 
 async function deleteBlobs(urls: string[]) {
@@ -97,6 +122,7 @@ export async function saveDogAction(_: FormState, fd: FormData): Promise<FormSta
   if (id) {
     const res = await sql`update dogs set ${sql(values)} where id = ${id}`;
     if (res.count === 0) return { error: "ไม่พบข้อมูลสุนัขตัวนี้" };
+    await ensureSlug(id, values.name);
     refreshSite();
     return { saved: true };
   }
@@ -107,6 +133,7 @@ export async function saveDogAction(_: FormState, fd: FormData): Promise<FormSta
   const [created] = await sql<{ id: string }[]>`
     insert into dogs ${sql({ ...values, sort_order: next })} returning id
   `;
+  await ensureSlug(created.id, values.name);
   refreshSite();
   redirect(`/admin/dogs/${created.id}?created=1`);
 }

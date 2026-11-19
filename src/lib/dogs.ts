@@ -5,6 +5,8 @@ export type DogStatus = "available" | "reserved" | "homed" | null;
 
 export type Dog = {
   id: string;
+  // Set for dogs with an English name; dogs without one have no page of their own.
+  slug: string | null;
   name: string;
   nameTh: string | null;
   sex: "male" | "female" | null;
@@ -36,3 +38,5 @@ export const categoryLabel: Record<DogCategory, string> = {
   young: "Young",
   adult: "Adult",
 };
+
+export const dogPath = (slug: string) => `/dogs/${slug}`;

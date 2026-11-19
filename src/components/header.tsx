@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { farm, navLinks } from "@/lib/site";
 import { CloseIcon, MenuIcon } from "@/components/icons";
@@ -23,9 +24,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-bg/95 px-4 backdrop-blur-sm md:px-12">
       <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 py-3">
-        <a href="#top" className="text-ink no-underline" onClick={() => setOpen(false)}>
+        <Link href="/#top" className="text-ink no-underline" onClick={() => setOpen(false)}>
           <Wordmark />
-        </a>
+        </Link>
 
         <nav aria-label="เมนูหลัก" className="hidden gap-7 text-base lg:flex">
           {navLinks.map((l) => (
@@ -64,7 +65,7 @@ export function Header() {
           className="mx-auto max-w-[1200px] border-t border-border pb-4 lg:hidden"
         >
           <ul className="flex flex-col">
-            {[...navLinks, { href: "#contact", label: "ติดต่อ" }].map((l) => (
+            {[...navLinks, { href: "/#contact", label: "ติดต่อ" }].map((l) => (
               <li key={l.href} className="border-b border-border last:border-b-0">
                 <a
                   href={l.href}

@@ -4,6 +4,7 @@ import type { DogCategory, DogStatus } from "@/lib/dogs";
 
 export type AdminDog = {
   id: string;
+  slug: string | null;
   name: string;
   nameTh: string | null;
   sex: "male" | "female" | null;
@@ -23,6 +24,7 @@ export type AdminPhoto = { id: string; url: string; isCover: boolean };
 
 type Row = {
   id: string;
+  slug: string | null;
   name: string;
   name_th: string | null;
   sex: AdminDog["sex"];
@@ -40,6 +42,7 @@ type Row = {
 
 const toAdminDog = (r: Row): AdminDog => ({
   id: r.id,
+  slug: r.slug,
   name: r.name,
   nameTh: r.name_th,
   sex: r.sex,
@@ -57,7 +60,7 @@ const toAdminDog = (r: Row): AdminDog => ({
 
 // A function so each query gets its own fragment instance.
 const selectDogs = () => sql`
-  select d.id, d.name, d.name_th, d.sex, d.color, d.category, d.status, d.description,
+  select d.id, d.slug, d.name, d.name_th, d.sex, d.color, d.category, d.status, d.description,
          d.tags, to_char(d.birth_date, 'YYYY-MM-DD') as birth_date, d.litter, d.is_published,
          (select p.storage_path from dog_photos p where p.dog_id = d.id
            order by p.is_cover desc, p.sort_order, p.created_at limit 1) as cover_photo,
