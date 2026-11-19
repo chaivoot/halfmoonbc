@@ -147,6 +147,8 @@ Migrations: ไฟล์ SQL ใน `db/migrations/` รันอัตโนม
 - โดเมนจริง: https://halfmoonbordercollie.com (จดผ่าน Vercel/Name.com, www redirect ไป apex โดย Vercel) `halfmoonbc.vercel.app` redirect มาที่โดเมนจริงใน `next.config.ts`
 - URL หลักมาจาก `siteUrl` (ใช้ `VERCEL_PROJECT_PRODUCTION_URL` อัตโนมัติ, fallback เป็นโดเมนจริง) หรือตั้ง `NEXT_PUBLIC_SITE_URL` บังคับได้
 - FAQ ใน JSON-LD ต้องตรงกับที่แสดงบนหน้าเว็บเสมอ (ใช้ `faqs` ชุดเดียวกัน)
+- หน้าของน้องแต่ละตัว `/dogs/[slug]` (`src/app/dogs/[slug]/page.tsx`): มีเฉพาะน้องที่ published และมี `slug` ซึ่งสร้างจากชื่อภาษาอังกฤษตอนบันทึกครั้งแรก (`ensureSlug` ใน `src/app/admin/actions.ts`) และไม่เปลี่ยนแม้เปลี่ยนชื่อ ทุกหน้าอยู่ใน `sitemap.xml` อัตโนมัติ
+- เมนูและ footer ใช้ร่วมกันทุกหน้าสาธารณะ (`Header`, `SiteFooter`) ลิงก์เมนูเป็น `/#section` เพื่อให้ใช้ได้จากทุกหน้า
 
 ## 7. ข้อมูลที่ยังขาด (ถามเจ้าของ อย่าเดา)
 

@@ -1,7 +1,9 @@
 import Image from "next/image";
-import { Header, Wordmark } from "@/components/header";
+import Link from "next/link";
+import { Header } from "@/components/header";
 import { FamilyGallery } from "@/components/family-gallery";
 import { JsonLd } from "@/components/json-ld";
+import { SiteFooter } from "@/components/site-footer";
 import {
   ChatIcon,
   CheckIcon,
@@ -13,7 +15,7 @@ import {
   PlusIcon,
   ShieldCheckIcon,
 } from "@/components/icons";
-import { sexLabel } from "@/lib/dogs";
+import { dogPath, sexLabel } from "@/lib/dogs";
 import { getFamily, getParents } from "@/lib/queries";
 import {
   faqs,
@@ -173,7 +175,7 @@ export default async function Home() {
               {parents.map((p) => (
                 <article
                   key={p.id}
-                  className="flex flex-col overflow-hidden rounded-[22px] border border-border bg-surface"
+                  className="relative flex flex-col overflow-hidden rounded-[22px] border border-border bg-surface transition-shadow has-[a:hover]:shadow-[0_10px_30px_rgba(20,20,20,0.10)]"
                 >
                   <div className="relative aspect-[4/3] bg-placeholder">
                     {p.coverPhoto && (
@@ -189,7 +191,14 @@ export default async function Home() {
                   <div className="flex flex-col gap-2.5 p-[22px]">
                     <div className="flex items-baseline justify-between gap-3">
                       <h3 className="font-heading m-0 text-2xl font-bold">
-                        {p.name}{" "}
+                        {p.slug ? (
+                          // The ::after overlay makes the whole card one tap target.
+                          <Link href={dogPath(p.slug)} className="text-ink after:absolute after:inset-0">
+                            {p.name}
+                          </Link>
+                        ) : (
+                          p.name
+                        )}{" "}
                         <span className="text-[17px] font-medium text-text-3">{p.nameTh}</span>
                       </h3>
                       {p.sex && (
@@ -205,6 +214,11 @@ export default async function Home() {
                         </li>
                       ))}
                     </ul>
+                    {p.slug && (
+                      <span className="mt-1 text-[15px] font-semibold text-black underline underline-offset-4">
+                        ดูรายละเอียดและรูปเพิ่ม
+                      </span>
+                    )}
                   </div>
                 </article>
               ))}
@@ -373,34 +387,7 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className={`bg-ink pt-7 pb-24 text-sm text-[#A3A3A3] md:pb-7 ${pad}`}>
-        <div className={`${container} flex flex-wrap items-center justify-between gap-4`}>
-          <div className="text-bg">
-            <Wordmark dark />
-          </div>
-          <div className="flex flex-col gap-1 md:items-end">
-            <span>© 2026 Halfmoon Border Collie Thailand · โปรเจคของ Hero Pet Farm · ระนอง ประเทศไทย</span>
-            <span>
-              Website by{" "}
-              {/* Followed backlink; keep the referrer so dogsanook.com sees the traffic source. */}
-              <a href="https://dogsanook.com" target="_blank" rel="noopener" className="text-inherit no-underline">
-                หมาสนุก
-              </a>
-            </span>
-          </div>
-        </div>
-      </footer>
-
-      {/* Floating LINE button for mobile */}
-      <a
-        href={farm.lineUrl}
-        {...external}
-        className="fixed right-4 bottom-4 z-20 inline-flex min-h-13 items-center gap-2 rounded-full bg-black px-5 font-semibold text-white ring-2 ring-yellow shadow-[0_8px_24px_rgba(20,20,20,0.25)] md:hidden"
-        style={{ marginBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <ChatIcon size={22} />
-        ทัก LINE
-      </a>
+      <SiteFooter />
     </>
   );
 }

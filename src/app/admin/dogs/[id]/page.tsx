@@ -7,6 +7,7 @@ import { PhotoManager } from "@/components/admin/photo-manager";
 import { getDog, getPhotos } from "@/lib/admin-dogs";
 import { requireAdmin } from "@/lib/auth";
 import { isUuid } from "@/lib/validate";
+import { dogPath } from "@/lib/dogs";
 
 export default async function EditDogPage({ params, searchParams }: PageProps<"/admin/dogs/[id]">) {
   await requireAdmin();
@@ -24,6 +25,17 @@ export default async function EditDogPage({ params, searchParams }: PageProps<"/
         </Link>
         <h1 className="font-heading m-0 text-3xl font-bold">{dog.name || "แก้ไขข้อมูล"}</h1>
         {query.created === "1" && <Notice>เพิ่มข้อมูลแล้ว เพิ่มรูปด้านล่างได้เลย</Notice>}
+        {dog.slug ? (
+          <p className="m-0 text-[15px] text-text-2">
+            หน้าของน้องบนเว็บ:{" "}
+            <Link href={dogPath(dog.slug)} target="_blank" className="font-semibold text-black underline underline-offset-4">
+              halfmoonbordercollie.com{dogPath(dog.slug)}
+            </Link>
+            {!dog.isPublished && " (ซ่อนอยู่ ลูกค้ายังเปิดไม่ได้)"}
+          </p>
+        ) : (
+          <p className="m-0 text-[15px] text-text-3">ใส่ชื่อภาษาอังกฤษแล้วกดบันทึก น้องจะมีหน้าของตัวเองบนเว็บ</p>
+        )}
 
         <section className="flex flex-col gap-3">
           <h2 className="font-heading m-0 text-xl font-semibold">รูป</h2>

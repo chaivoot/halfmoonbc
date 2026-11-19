@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
-import { type Dog, galleryTabs, statusLabel } from "@/lib/dogs";
+import { type Dog, dogPath, galleryTabs, statusLabel } from "@/lib/dogs";
 import { farm } from "@/lib/site";
 
 type TabId = (typeof galleryTabs)[number]["id"];
@@ -127,6 +128,13 @@ export function FamilyGallery({ dogs }: { dogs: Dog[] }) {
                   </span>
                 )}
               </figcaption>
+            )}
+            {d.slug && (
+              <Link
+                href={dogPath(d.slug)}
+                aria-label={`ดูรายละเอียด ${d.name}`}
+                className="absolute inset-0 rounded-2xl ring-black ring-offset-2 focus-visible:ring-2"
+              />
             )}
           </figure>
         ))}
