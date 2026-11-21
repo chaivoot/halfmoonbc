@@ -61,6 +61,7 @@ export function PhotoManager({ dogId, initialPhotos }: { dogId: string; initialP
     setProgress({ done: 0, total: list.length });
     const urls: string[] = [];
     let failed = 0;
+    let reason = "";
     for (const file of list) {
       try {
         const blob = await resizeImage(file);
@@ -75,6 +76,7 @@ export function PhotoManager({ dogId, initialPhotos }: { dogId: string; initialP
       } catch (e) {
         console.error(e);
         failed++;
+        reason ||= e instanceof Error ? e.message : String(e);
       }
       setProgress((p) => p && { ...p, done: p.done + 1 });
     }
@@ -87,7 +89,10 @@ export function PhotoManager({ dogId, initialPhotos }: { dogId: string; initialP
     }
     setProgress(null);
     if (inputRef.current) inputRef.current.value = "";
-    if (failed) setError(`อัปโหลดไม่สำเร็จ ${failed} รูป ลองใหม่อีกครั้ง`);
+    if (failed) {
+      // Show the underlying reason too, so a setup problem can be diagnosed from a screenshot.
+      setError(`อัปโหลดไม่สำเร็จ ${failed} รูป ลองใหม่อีกครั้ง${reason ? ` (สาเหตุ: ${reason})` : ""}`);
+    }
   }
 
   function run(task: () => Promise<AdminPhoto[]>) {
