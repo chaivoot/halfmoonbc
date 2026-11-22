@@ -44,7 +44,8 @@ async function publishedDogs(parents: boolean): Promise<Dog[]> {
     from dogs d
     where d.is_published
       and (d.category = 'parent') = ${parents}
-    order by d.sort_order, d.created_at
+    -- available first, then reserved, homed, no status; newest (highest sort_order) on top
+    order by coalesce(array_position(array['available','reserved','homed'], d.status), 4), d.sort_order desc, d.created_at desc
   `;
   return rows.map(toDog);
 }
@@ -90,9 +91,10 @@ export async function getDogPage(slug: string): Promise<DogPage | null> {
 // Every published dog that has a page, for the sitemap and static generation.
 export async function getDogSlugs(): Promise<{ slug: string; updatedAt: Date }[]> {
   const rows = await sql<{ slug: string; updated_at: Date }[]>`
-    select slug, updated_at from dogs
-    where is_published and slug is not null
-    order by array_position(array['parent','newborn','young','adult'], category), sort_order, created_at
+    select d.slug, d.updated_at from dogs d
+    where d.is_published and d.slug is not null
+    order by array_position(array['parent','newborn','young','adult'], d.category),
+             coalesce(array_position(array['available','reserved','homed'], d.status), 4), d.sort_order desc, d.created_at desc
   `;
   return rows.map((r) => ({ slug: r.slug, updatedAt: r.updated_at }));
 }

@@ -51,6 +51,15 @@ async function deleteBlobs(urls: string[]) {
   if (blobs.length) await del(blobs);
 }
 
+// Highest sort_order in a category plus one: lists show the highest first,
+// so this puts a dog at the top of its status group.
+async function nextSortOrder(category: string): Promise<number> {
+  const [{ next }] = await sql<{ next: number }[]>`
+    select coalesce(max(sort_order), 0) + 1 as next from dogs where category = ${category}
+  `;
+  return next;
+}
+
 // ---- Auth ----
 
 export async function loginAction(_: FormState, fd: FormData): Promise<FormState> {
@@ -120,18 +129,19 @@ export async function saveDogAction(_: FormState, fd: FormData): Promise<FormSta
   };
 
   if (id) {
-    const res = await sql`update dogs set ${sql(values)} where id = ${id}`;
+    const [before] = await sql<{ category: string }[]>`select category from dogs where id = ${id}`;
+    if (!before) return { error: "ไม่พบข้อมูลสุนัขตัวนี้" };
+    // A dog moved to another category (e.g. New born -> Young) goes to the top of it.
+    const moved = before.category !== category ? { sort_order: await nextSortOrder(category) } : {};
+    const res = await sql`update dogs set ${sql({ ...values, ...moved })} where id = ${id}`;
     if (res.count === 0) return { error: "ไม่พบข้อมูลสุนัขตัวนี้" };
     await ensureSlug(id, values.name);
     refreshSite();
     return { saved: true };
   }
 
-  const [{ next }] = await sql<{ next: number }[]>`
-    select coalesce(max(sort_order), 0) + 1 as next from dogs where category = ${category}
-  `;
   const [created] = await sql<{ id: string }[]>`
-    insert into dogs ${sql({ ...values, sort_order: next })} returning id
+    insert into dogs ${sql({ ...values, sort_order: await nextSortOrder(category) })} returning id
   `;
   await ensureSlug(created.id, values.name);
   refreshSite();
@@ -142,6 +152,37 @@ export async function setStatusAction(id: string, status: DogStatus) {
   await requireAdmin();
   if (!isUuid(id) || (status !== null && !isStatus(status))) return;
   await sql`update dogs set status = ${status} where id = ${id} and category <> 'parent'`;
+  refreshSite();
+}
+
+// Swap a dog with its neighbour above or below. Dogs only trade places within
+// the same category and status, because status decides the order between groups.
+export async function moveDogAction(id: string, direction: "up" | "down") {
+  await requireAdmin();
+  if (!isUuid(id) || (direction !== "up" && direction !== "down")) return;
+  await sql.begin(async (tx) => {
+    const [dog] = await tx<{ category: string; status: string | null; sort_order: number }[]>`
+      select category, status, sort_order from dogs where id = ${id} for update
+    `;
+    if (!dog) return;
+    // Lists show the highest sort_order first, so "up" means the next higher number.
+    const [other] = await tx<{ id: string; sort_order: number }[]>`
+      select id, sort_order from dogs
+      where category = ${dog.category}
+        and status is not distinct from ${dog.status}
+        and id <> ${id}
+        and ${direction === "up" ? tx`sort_order >= ${dog.sort_order}` : tx`sort_order <= ${dog.sort_order}`}
+      order by ${direction === "up" ? tx`sort_order asc` : tx`sort_order desc`}, created_at
+      limit 1
+      for update
+    `;
+    if (!other) return;
+    // Equal numbers would swap to no effect, so nudge past the neighbour instead.
+    const target =
+      other.sort_order === dog.sort_order ? dog.sort_order + (direction === "up" ? 1 : -1) : other.sort_order;
+    await tx`update dogs set sort_order = ${dog.sort_order} where id = ${other.id}`;
+    await tx`update dogs set sort_order = ${target} where id = ${id}`;
+  });
   refreshSite();
 }
 

@@ -40,3 +40,8 @@ export const categoryLabel: Record<DogCategory, string> = {
 };
 
 export const dogPath = (slug: string) => `/dogs/${slug}`;
+
+// Display order inside a category: available first, then reserved, homed, and
+// dogs without a status last. Mirrors the ORDER BY used in src/lib/queries.ts and src/lib/admin-dogs.ts.
+export const statusRank = (status: DogStatus) =>
+  status === "available" ? 1 : status === "reserved" ? 2 : status === "homed" ? 3 : 4;

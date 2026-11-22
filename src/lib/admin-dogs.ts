@@ -72,8 +72,9 @@ export async function listDogs(category: DogCategory | null): Promise<AdminDog[]
   const rows = await sql<Row[]>`
     ${selectDogs()}
     ${category ? sql`where d.category = ${category}` : sql``}
+    -- Same order as the website: by category, then status, newest on top
     order by array_position(array['parent','newborn','young','adult'], d.category),
-             d.sort_order, d.created_at
+             coalesce(array_position(array['available','reserved','homed'], d.status), 4), d.sort_order desc, d.created_at desc
   `;
   return rows.map(toAdminDog);
 }
