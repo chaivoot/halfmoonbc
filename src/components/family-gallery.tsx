@@ -111,6 +111,17 @@ export function FamilyGallery({ dogs }: { dogs: Dog[] }) {
                 className="object-cover"
               />
             )}
+            {d.slug && (
+              <span
+                aria-hidden="true"
+                className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/80 px-3 py-1 text-[13px] font-semibold text-white"
+              >
+                ดูรายละเอียด
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </span>
+            )}
             {(d.status || d.name) && (
               <figcaption className="absolute inset-x-2 bottom-2 flex items-center justify-between gap-2">
                 {d.name ? (

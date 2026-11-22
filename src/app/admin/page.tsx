@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AdminHeader, Notice, primaryButton } from "@/components/admin/ui";
+import { DogMoveButtons } from "@/components/admin/dog-move-buttons";
 import { DogQuickActions } from "@/components/admin/dog-quick-actions";
 import { listDogs } from "@/lib/admin-dogs";
 import { requireAdmin } from "@/lib/auth";
-import { categoryLabel } from "@/lib/dogs";
+import { categoryLabel, statusRank } from "@/lib/dogs";
 import { categories, isCategory } from "@/lib/validate";
 
 export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
@@ -12,6 +13,10 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
   const params = await searchParams;
   const category = isCategory(params.c) ? params.c : null;
   const dogs = await listDogs(category);
+
+  // Dogs only swap places with neighbours of the same category and status.
+  const sameGroup = (a?: (typeof dogs)[number], b?: (typeof dogs)[number]) =>
+    !!a && !!b && a.category === b.category && statusRank(a.status) === statusRank(b.status);
 
   const filters = [{ id: null, label: "ทั้งหมด" }, ...categories.map((c) => ({ id: c, label: categoryLabel[c] }))];
 
@@ -58,26 +63,34 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
         {dogs.length === 0 && <p className="text-text-2">ยังไม่มีข้อมูลในหมวดนี้</p>}
 
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
-          {dogs.map((d) => (
+          {dogs.map((d, i) => (
             <li key={d.id} className="flex flex-col gap-3 rounded-2xl border border-border bg-white p-3">
-              <Link href={`/admin/dogs/${d.id}`} className="flex items-center gap-3 text-ink">
-                <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-placeholder">
-                  {d.coverPhoto && (
-                    <Image src={d.coverPhoto} alt="" fill sizes="80px" className="object-cover" />
-                  )}
-                </div>
-                <div className="flex min-w-0 flex-col gap-0.5">
-                  <span className="truncate text-lg font-semibold">
-                    {d.name || <span className="text-text-3">(ยังไม่ตั้งชื่อ)</span>}
-                    {d.nameTh && <span className="ml-2 text-[15px] font-normal text-text-3">{d.nameTh}</span>}
-                  </span>
-                  <span className="text-sm text-text-3">
-                    {categoryLabel[d.category]} · {d.photoCount} รูป
-                    {!d.isPublished && <span className="ml-2 rounded-full bg-ink px-2 py-0.5 text-xs text-white">ซ่อนอยู่</span>}
-                  </span>
-                  <span className="text-sm font-semibold text-black underline underline-offset-4">แก้ไข</span>
-                </div>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href={`/admin/dogs/${d.id}`} className="flex min-w-0 flex-1 items-center gap-3 text-ink">
+                  <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-placeholder">
+                    {d.coverPhoto && <Image src={d.coverPhoto} alt="" fill sizes="80px" className="object-cover" />}
+                  </div>
+                  <div className="flex min-w-0 flex-col gap-0.5">
+                    <span className="truncate text-lg font-semibold">
+                      {d.name || <span className="text-text-3">(ยังไม่ตั้งชื่อ)</span>}
+                      {d.nameTh && <span className="ml-2 text-[15px] font-normal text-text-3">{d.nameTh}</span>}
+                    </span>
+                    <span className="text-sm text-text-3">
+                      {categoryLabel[d.category]} · {d.photoCount} รูป
+                      {!d.isPublished && (
+                        <span className="ml-2 rounded-full bg-ink px-2 py-0.5 text-xs text-white">ซ่อนอยู่</span>
+                      )}
+                    </span>
+                    <span className="text-sm font-semibold text-black underline underline-offset-4">แก้ไข</span>
+                  </div>
+                </Link>
+                <DogMoveButtons
+                  id={d.id}
+                  name={d.name || "น้อง"}
+                  canUp={sameGroup(d, dogs[i - 1])}
+                  canDown={sameGroup(d, dogs[i + 1])}
+                />
+              </div>
               <DogQuickActions
                 id={d.id}
                 status={d.status}
