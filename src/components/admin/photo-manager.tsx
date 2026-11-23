@@ -20,7 +20,16 @@ import { Notice, primaryButton } from "@/components/admin/ui-client";
 import type { AdminPhoto } from "@/lib/admin-dogs";
 import { photoExt, preparePhoto } from "@/lib/prepare-photo";
 
-export function PhotoManager({ dogId, initialPhotos }: { dogId: string; initialPhotos: AdminPhoto[] }) {
+export function PhotoManager({
+  dogId,
+  initialPhotos,
+  watermark,
+}: {
+  dogId: string;
+  initialPhotos: AdminPhoto[];
+  // Gallery dogs get the Halfmoon watermark; parent photos stay clean.
+  watermark: boolean;
+}) {
   const [photos, setPhotos] = useState(initialPhotos);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +53,7 @@ export function PhotoManager({ dogId, initialPhotos }: { dogId: string; initialP
     let reason = "";
     for (const file of list) {
       try {
-        const blob = await preparePhoto(file);
+        const blob = await preparePhoto(file, watermark);
         const result = await upload(`dogs/${dogId}/photo.${photoExt(blob)}`, blob, {
           access: "public",
           handleUploadUrl: "/api/admin/upload",

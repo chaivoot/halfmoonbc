@@ -39,7 +39,7 @@ export default async function EditDogPage({ params, searchParams }: PageProps<"/
 
         <section className="flex flex-col gap-3">
           <h2 className="font-heading m-0 text-xl font-semibold">รูป</h2>
-          <PhotoManager dogId={dog.id} initialPhotos={photos} />
+          <PhotoManager dogId={dog.id} initialPhotos={photos} watermark={dog.category !== "parent"} />
         </section>
 
         <section className="flex flex-col gap-3">

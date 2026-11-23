@@ -1,4 +1,5 @@
-// Browser-only: shrink a photo and burn the "Halfmoon" watermark into it before upload.
+// Browser-only: shrink a photo and, for gallery dogs, burn the "Halfmoon" watermark
+// into it before upload. scripts/watermark.mjs draws the same mark at build time.
 
 const MAX_EDGE = 1600;
 
@@ -28,7 +29,7 @@ function drawWatermark(ctx: CanvasRenderingContext2D, width: number, height: num
   ctx.restore();
 }
 
-export async function preparePhoto(source: Blob): Promise<Blob> {
+export async function preparePhoto(source: Blob, watermark: boolean): Promise<Blob> {
   const [bitmap, family] = await Promise.all([
     createImageBitmap(source, { imageOrientation: "from-image" }),
     headingFont(),
@@ -40,7 +41,7 @@ export async function preparePhoto(source: Blob): Promise<Blob> {
   const ctx = canvas.getContext("2d")!;
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  drawWatermark(ctx, canvas.width, canvas.height, family);
+  if (watermark) drawWatermark(ctx, canvas.width, canvas.height, family);
   const toBlob = (type: string) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.85));
   // Older Safari can't encode WebP and silently returns PNG instead.
   const webp = await toBlob("image/webp");
