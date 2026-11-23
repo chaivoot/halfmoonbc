@@ -18,27 +18,7 @@ import { useRef, useState, useTransition } from "react";
 import { addPhotosAction, deletePhotoAction, reorderPhotosAction, setCoverAction } from "@/app/admin/actions";
 import { Notice, primaryButton } from "@/components/admin/ui-client";
 import type { AdminPhoto } from "@/lib/admin-dogs";
-
-const MAX_EDGE = 1600;
-
-// Shrink phone photos before upload: faster on mobile data and well within page needs.
-async function resizeImage(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  const toBlob = (type: string) =>
-    new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.82));
-  // Older Safari can't encode WebP and silently returns PNG instead.
-  const webp = await toBlob("image/webp");
-  if (webp?.type === "image/webp") return webp;
-  const jpeg = await toBlob("image/jpeg");
-  if (!jpeg) throw new Error("resize failed");
-  return jpeg;
-}
+import { photoExt, preparePhoto } from "@/lib/prepare-photo";
 
 export function PhotoManager({ dogId, initialPhotos }: { dogId: string; initialPhotos: AdminPhoto[] }) {
   const [photos, setPhotos] = useState(initialPhotos);
@@ -64,9 +44,8 @@ export function PhotoManager({ dogId, initialPhotos }: { dogId: string; initialP
     let reason = "";
     for (const file of list) {
       try {
-        const blob = await resizeImage(file);
-        const ext = blob.type === "image/webp" ? "webp" : "jpg";
-        const result = await upload(`dogs/${dogId}/photo.${ext}`, blob, {
+        const blob = await preparePhoto(file);
+        const result = await upload(`dogs/${dogId}/photo.${photoExt(blob)}`, blob, {
           access: "public",
           handleUploadUrl: "/api/admin/upload",
           clientPayload: dogId,

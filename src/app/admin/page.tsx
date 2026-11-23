@@ -3,7 +3,8 @@ import Link from "next/link";
 import { AdminHeader, Notice, primaryButton } from "@/components/admin/ui";
 import { DogMoveButtons } from "@/components/admin/dog-move-buttons";
 import { DogQuickActions } from "@/components/admin/dog-quick-actions";
-import { listDogs } from "@/lib/admin-dogs";
+import { WatermarkOldPhotos } from "@/components/admin/watermark-old-photos";
+import { countPhotosWithoutWatermark, listDogs } from "@/lib/admin-dogs";
 import { requireAdmin } from "@/lib/auth";
 import { categoryLabel, statusRank } from "@/lib/dogs";
 import { categories, isCategory } from "@/lib/validate";
@@ -12,7 +13,7 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
   await requireAdmin();
   const params = await searchParams;
   const category = isCategory(params.c) ? params.c : null;
-  const dogs = await listDogs(category);
+  const [dogs, unwatermarked] = await Promise.all([listDogs(category), countPhotosWithoutWatermark()]);
 
   // Dogs only swap places with neighbours of the same category and status.
   const sameGroup = (a?: (typeof dogs)[number], b?: (typeof dogs)[number]) =>
@@ -34,6 +35,8 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
           วิธีเพิ่มน้อง อัปโหลดรูป และเปลี่ยนสถานะ
           <span className="shrink-0 underline underline-offset-4">ดูวิธีใช้</span>
         </Link>
+
+        {unwatermarked > 0 && <WatermarkOldPhotos count={unwatermarked} />}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-heading m-0 text-3xl font-bold">สุนัขทั้งหมด</h1>
