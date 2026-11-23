@@ -133,6 +133,7 @@ Security: ไม่มี RLS เพราะ DB เข้าถึงได้�
 
 Migrations: ไฟล์ SQL ใน `db/migrations/` รันอัตโนมัติก่อน `next build` (`scripts/migrate.mjs`) แต่ละไฟล์รันครั้งเดียว ห้ามแก้ไฟล์ที่ apply แล้ว ให้เพิ่มไฟล์ใหม่แทน
 `dog_photos.storage_path` เป็น path ใน `public/` (รูปจากเว็บเดิม) หรือ URL เต็มของ Vercel Blob
+ลายน้ำ: รูปน้องหมวด New born / Young / Adult มีลายน้ำ "Halfmoon" จางๆ กลางภาพ (พ่อแม่พันธุ์ไม่มี) browser ใส่ตอนอัปโหลด (`src/lib/prepare-photo.ts`) และ `scripts/watermark.mjs` ใส่ให้รูปที่ `dog_photos.watermarked = false` ทุกครั้งที่ build (ต้องมี `BLOB_READ_WRITE_TOKEN` ตอน build)
 
 ### Phase 2 (ยังไม่ยืนยัน ถามเจ้าของก่อนทำ)
 - แก้ราคา, FAQ, ข้อความหน้าแรกจาก admin (ตาราง `site_settings`)

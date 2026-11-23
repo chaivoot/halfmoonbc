@@ -211,7 +211,9 @@ export async function addPhotosAction(dogId: string, urls: string[]): Promise<Ad
   await requireAdmin();
   if (!isUuid(dogId)) throw new Error("invalid dog");
   const clean = urls.filter(isBlobUrl).slice(0, 30);
-  if (clean.length) {
+  const [dog] = await sql<{ category: string }[]>`select category from dogs where id = ${dogId}`;
+  if (dog && clean.length) {
+    const gallery = dog.category !== "parent";
     await sql.begin(async (tx) => {
       const [{ next, has_cover }] = await tx<{ next: number; has_cover: boolean }[]>`
         select coalesce(max(sort_order), 0) + 1 as next, coalesce(bool_or(is_cover), false) as has_cover
@@ -224,8 +226,8 @@ export async function addPhotosAction(dogId: string, urls: string[]): Promise<Ad
             storage_path: url,
             sort_order: next + i,
             is_cover: !has_cover && i === 0,
-            // The browser burns the watermark in before upload (src/lib/prepare-photo.ts).
-            watermarked: true,
+            // The browser watermarks gallery photos before upload (src/lib/prepare-photo.ts).
+            watermarked: gallery,
           })),
         )}
       `;
@@ -278,38 +280,3 @@ export async function reorderPhotosAction(dogId: string, photoIds: string[]): Pr
   return getPhotos(dogId);
 }
 
-// ---- Watermarking photos uploaded before watermarks existed ----
-
-export type PendingPhoto = { id: string; dogId: string; url: string };
-
-export async function photosWithoutWatermarkAction(): Promise<PendingPhoto[]> {
-  await requireAdmin();
-  const rows = await sql<{ id: string; dog_id: string; storage_path: string }[]>`
-    select id, dog_id, storage_path from dog_photos where not watermarked order by created_at
-  `;
-  return rows.map((r) => ({ id: r.id, dogId: r.dog_id, url: r.storage_path }));
-}
-
-// Point a photo at its watermarked copy and delete the old blob.
-export async function replaceWithWatermarkedAction(photoId: string, url: string): Promise<boolean> {
-  await requireAdmin();
-  if (!isUuid(photoId) || !isBlobUrl(url)) return false;
-  const [old] = await sql<{ storage_path: string }[]>`
-    update dog_photos p set storage_path = ${url}, watermarked = true
-    from dog_photos before
-    where p.id = ${photoId} and before.id = p.id and not p.watermarked
-    returning before.storage_path
-  `;
-  if (!old) {
-    // Already converted (e.g. in another tab): drop the copy we just uploaded.
-    await deleteBlobs([url]);
-    return false;
-  }
-  await deleteBlobs([old.storage_path]);
-  return true;
-}
-
-export async function finishWatermarkingAction() {
-  await requireAdmin();
-  refreshSite();
-}

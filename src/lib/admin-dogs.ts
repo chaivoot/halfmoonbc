@@ -92,10 +92,3 @@ export async function getPhotos(dogId: string): Promise<AdminPhoto[]> {
   `;
   return rows.map((r) => ({ id: r.id, url: r.storage_path, isCover: r.is_cover }));
 }
-
-export async function countPhotosWithoutWatermark(): Promise<number> {
-  const [{ count }] = await sql<
-    { count: number }[]
-  >`select count(*)::int as count from dog_photos where not watermarked`;
-  return count;
-}
