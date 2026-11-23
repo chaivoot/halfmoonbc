@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import { DogPhotos } from "@/components/dog-photos";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/header";
 import { ChatIcon, PhoneIcon } from "@/components/icons";
@@ -64,7 +64,6 @@ export default async function DogPageRoute({ params }: PageProps<"/dogs/[slug]">
 
   const isParent = dog.category === "parent";
   const section = isParent ? { href: "/#parents", label: "พ่อแม่พันธุ์" } : { href: "/#family", label: "Halfmoon Family" };
-  const [cover, ...rest] = dog.photos;
 
   const facts = [
     { label: "หมวด", value: categoryLabel[dog.category] },
@@ -113,36 +112,7 @@ export default async function DogPageRoute({ params }: PageProps<"/dogs/[slug]">
           </nav>
 
           <div className="grid gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:gap-12">
-            <div className="flex flex-col gap-3">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-placeholder">
-                {cover && (
-                  <Image
-                    src={cover}
-                    alt={`${fullName(dog)} บอร์เดอร์คอลลี่`}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 640px"
-                    className="object-cover"
-                    loading="eager"
-                    fetchPriority="high"
-                  />
-                )}
-              </div>
-              {rest.length > 0 && (
-                <ul className="m-0 grid list-none grid-cols-3 gap-3 p-0">
-                  {rest.map((src, i) => (
-                    <li key={src} className="relative aspect-square overflow-hidden rounded-2xl bg-placeholder">
-                      <Image
-                        src={src}
-                        alt={`${fullName(dog)} รูปที่ ${i + 2}`}
-                        fill
-                        sizes="(max-width: 768px) 33vw, 210px"
-                        className="object-cover"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <DogPhotos photos={dog.photos} name={fullName(dog)} />
 
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
