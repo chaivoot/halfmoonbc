@@ -3,9 +3,9 @@ import Link from "next/link";
 import { DogPhotos } from "@/components/dog-photos";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/header";
-import { ChatIcon, PhoneIcon } from "@/components/icons";
+import { ChatIcon, InstagramIcon, PhoneIcon } from "@/components/icons";
 import { SiteFooter } from "@/components/site-footer";
-import { categoryLabel, dogPath, sexLabel, statusLabel } from "@/lib/dogs";
+import { categoryLabel, dogPath, instagramUrl, isFamily, sexLabel, statusLabel } from "@/lib/dogs";
 import { type DogPage, getDogPage, getDogSlugs } from "@/lib/queries";
 import { farm, siteUrl } from "@/lib/site";
 
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps<"/dogs/[slug]">): P
   const title = `${fullName(dog)} บอร์เดอร์คอลลี่${dog.color ? ` ${dog.color}` : ""} - ${farm.name}`;
   const description =
     dog.description ??
-    `${fullName(dog)} บอร์เดอร์คอลลี่จากฟาร์ม Halfmoon จ.ระนอง ${categoryLabel[dog.category]}`;
+    `${fullName(dog)} บอร์เดอร์คอลลี่จากฟาร์ม Halfmoon จ.ระนอง ${isFamily(dog) ? "ครอบครัว Halfmoon" : categoryLabel[dog.category]}`;
   const path = dogPath(dog.slug!);
   return {
     title,
@@ -63,10 +63,16 @@ export default async function DogPageRoute({ params }: PageProps<"/dogs/[slug]">
   if (!dog) notFound();
 
   const isParent = dog.category === "parent";
-  const section = isParent ? { href: "/#parents", label: "พ่อแม่พันธุ์" } : { href: "/#family", label: "Halfmoon Family" };
+  const family = isFamily(dog);
+  const section = isParent
+    ? { href: "/#parents", label: "พ่อแม่พันธุ์" }
+    : family
+      ? { href: "/#family", label: "ครอบครัว Halfmoon" }
+      : { href: "/#puppies", label: "ลูกสุนัข" };
 
   const facts = [
-    { label: "หมวด", value: categoryLabel[dog.category] },
+    { label: "หมวด", value: section.label },
+    family && dog.province && { label: "อยู่ที่", value: dog.province },
     dog.sex && { label: "เพศ", value: sexLabel[dog.sex] },
     dog.color && { label: "สี", value: dog.color },
     dog.birthDate && { label: "วันเกิด", value: thaiDate(dog.birthDate) },
@@ -117,13 +123,13 @@ export default async function DogPageRoute({ params }: PageProps<"/dogs/[slug]">
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <span className="font-heading text-sm font-semibold text-yellow-text">
-                  {isParent ? "พ่อแม่พันธุ์" : `Halfmoon Family · ${categoryLabel[dog.category]}`}
+                  {section.label}
                 </span>
                 <h1 className="font-heading m-0 text-[36px] font-bold leading-[1.15] md:text-5xl">
                   {dog.name}{" "}
                   {dog.nameTh && <span className="text-[24px] font-medium text-text-3 md:text-3xl">{dog.nameTh}</span>}
                 </h1>
-                {dog.status && (
+                {dog.status && !family && (
                   <span
                     className={`self-start rounded-full px-4 py-1.5 text-[15px] font-semibold ${statusStyle[dog.status]}`}
                   >
@@ -143,6 +149,27 @@ export default async function DogPageRoute({ params }: PageProps<"/dogs/[slug]">
 
               {dog.description && <p className="m-0 text-[17px] text-text-2">{dog.description}</p>}
 
+              {family && (dog.ownerMessage || dog.instagram) && (
+                <div className="flex flex-col gap-3 rounded-2xl bg-yellow-soft p-5">
+                  {dog.ownerMessage && (
+                    <figure className="m-0 flex flex-col gap-1.5">
+                      <figcaption className="text-[14px] font-semibold text-yellow-text">ข้อความจากครอบครัวของ {dog.name}</figcaption>
+                      <blockquote className="m-0 text-[17px] text-ink">{dog.ownerMessage}</blockquote>
+                    </figure>
+                  )}
+                  {dog.instagram && (
+                    <a
+                      href={instagramUrl(dog.instagram)}
+                      {...external}
+                      className="inline-flex min-h-12 items-center gap-2 self-start rounded-full bg-black px-5 font-semibold text-white hover:bg-ink"
+                    >
+                      <InstagramIcon size={20} />
+                      ทักถามเจ้าของทาง Instagram
+                    </a>
+                  )}
+                </div>
+              )}
+
               {dog.tags.length > 0 && (
                 <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
                   {dog.tags.map((tag) => (
@@ -157,7 +184,9 @@ export default async function DogPageRoute({ params }: PageProps<"/dogs/[slug]">
                 <p className="m-0 text-[#D9D9D9]">
                   {isParent
                     ? `สนใจลูกของ ${dog.name} ทักมาเช็คคิวครอกถัดไปได้เลย`
-                    : dog.status === "available"
+                    : family
+                      ? `อยากได้น้องแบบ ${dog.name} ทักมาเช็คคิวลูกสุนัขครอกถัดไปได้เลย`
+                      : dog.status === "available"
                       ? `${dog.name} ยังว่างอยู่ ทักมาสอบถามหรือนัดวิดีโอคอลดูน้องได้เลย`
                       : "สนใจน้องแบบนี้ ทักมาเช็คคิวครอกถัดไปได้เลย"}
                 </p>
@@ -181,7 +210,7 @@ export default async function DogPageRoute({ params }: PageProps<"/dogs/[slug]">
               </div>
 
               <Link href={section.href} className="self-start text-[15px] font-semibold text-black underline underline-offset-4">
-                ดู{isParent ? "พ่อแม่พันธุ์" : "น้อง"}ตัวอื่น
+                {isParent ? "ดูพ่อแม่พันธุ์ตัวอื่น" : family ? "ดูน้องตัวอื่นในครอบครัว Halfmoon" : "ดูลูกสุนัขตัวอื่น"}
               </Link>
             </div>
           </div>

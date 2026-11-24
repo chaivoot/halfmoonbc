@@ -1,6 +1,8 @@
 // Shared types and labels for the `dogs` table. Safe to import from client components.
 
-export type DogCategory = "parent" | "newborn" | "young" | "adult";
+// "newborn" is every puppy bred here. While available or reserved it shows under
+// ลูกสุนัข; once homed it moves to ครอบครัว Halfmoon.
+export type DogCategory = "parent" | "newborn";
 export type DogStatus = "available" | "reserved" | "homed" | null;
 
 export type Dog = {
@@ -16,6 +18,10 @@ export type Dog = {
   description: string | null;
   tags: string[];
   coverPhoto: string | null;
+  // Shown once the dog lives with its new family (ครอบครัว Halfmoon).
+  instagram: string | null;
+  province: string | null;
+  ownerMessage: string | null;
 };
 
 export const sexLabel = { male: "เพศผู้", female: "เพศเมีย" } as const;
@@ -26,22 +32,20 @@ export const statusLabel: Record<Exclude<DogStatus, null>, string> = {
   homed: "มีบ้านแล้ว",
 };
 
-export const galleryTabs = [
-  { id: "newborn", label: "New born" },
-  { id: "young", label: "Young" },
-  { id: "adult", label: "Adult" },
-] as const;
-
 export const categoryLabel: Record<DogCategory, string> = {
   parent: "พ่อแม่พันธุ์",
-  newborn: "New born",
-  young: "Young",
-  adult: "Adult",
+  newborn: "ลูกสุนัข",
 };
+
+// A puppy that has gone to its new home belongs to ครอบครัว Halfmoon.
+export const isFamily = (dog: { category: DogCategory; status: DogStatus }) =>
+  dog.category !== "parent" && dog.status === "homed";
+
+export const instagramUrl = (handle: string) => `https://instagram.com/${handle}`;
 
 export const dogPath = (slug: string) => `/dogs/${slug}`;
 
-// Display order inside a category: available first, then reserved, homed, and
-// dogs without a status last. Mirrors the ORDER BY used in src/lib/queries.ts and src/lib/admin-dogs.ts.
+// Display order inside a category: available, reserved, no status, then homed
+// (the family). Mirrors the ORDER BY in src/lib/queries.ts and src/lib/admin-dogs.ts.
 export const statusRank = (status: DogStatus) =>
-  status === "available" ? 1 : status === "reserved" ? 2 : status === "homed" ? 3 : 4;
+  status === "available" ? 1 : status === "reserved" ? 2 : status === null ? 3 : 4;

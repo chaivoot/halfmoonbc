@@ -6,7 +6,7 @@ import { inputClass, keepFieldsOnSubmit, labelClass, Notice, primaryButton } fro
 import type { AdminDog } from "@/lib/admin-dogs";
 import { categoryLabel, type DogCategory, statusLabel } from "@/lib/dogs";
 
-const categories: DogCategory[] = ["parent", "newborn", "young", "adult"];
+const categories: DogCategory[] = ["newborn", "parent"];
 
 export function DogForm({ dog, defaultCategory }: { dog?: AdminDog; defaultCategory?: DogCategory }) {
   const [state, action, pending] = useActionState(saveDogAction, undefined);
@@ -100,6 +100,43 @@ export function DogForm({ dog, defaultCategory }: { dog?: AdminDog; defaultCateg
         แท็ก (คั่นด้วยจุลภาค ,)
         <input name="tags" defaultValue={dog?.tags.join(", ")} placeholder="เช่น Agility, รักเด็ก" className={inputClass} />
       </label>
+
+      {category !== "parent" && (
+        <fieldset className="m-0 flex flex-col gap-4 rounded-2xl border border-border bg-bg p-4">
+          <legend className="px-1 text-[15px] font-semibold text-ink">ครอบครัว Halfmoon</legend>
+          <p className="m-0 text-sm text-text-3">
+            กรอกเมื่อน้องย้ายบ้านแล้ว (สถานะ มีบ้านแล้ว) น้องจะไปอยู่ในหัวข้อ ครอบครัว Halfmoon บนหน้าเว็บ
+            ขอความยินยอมจากเจ้าของก่อนใส่ Instagram
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className={labelClass}>
+              Instagram ของน้อง
+              <input
+                name="instagram"
+                defaultValue={dog?.instagram ? `@${dog.instagram}` : ""}
+                placeholder="เช่น @luna.bordercollie"
+                autoCapitalize="none"
+                autoCorrect="off"
+                className={inputClass}
+              />
+            </label>
+            <label className={labelClass}>
+              จังหวัดที่ไปอยู่
+              <input name="province" defaultValue={dog?.province ?? ""} placeholder="เช่น กรุงเทพฯ" className={inputClass} />
+            </label>
+          </div>
+          <label className={labelClass}>
+            ข้อความจากเจ้าของ
+            <textarea
+              name="owner_message"
+              defaultValue={dog?.ownerMessage ?? ""}
+              rows={3}
+              placeholder="เช่น น้องแข็งแรงดี ชอบวิ่งเล่นที่สวนทุกเย็น"
+              className={`${inputClass} py-3 leading-relaxed`}
+            />
+          </label>
+        </fieldset>
+      )}
 
       <label className="flex min-h-12 items-center gap-3 text-[17px] font-semibold">
         <input name="is_published" type="checkbox" defaultChecked={dog?.isPublished ?? true} className="size-6 accent-black" />

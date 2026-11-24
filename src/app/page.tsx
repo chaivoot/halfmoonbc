@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/header";
-import { FamilyGallery } from "@/components/family-gallery";
+import { FamilyList } from "@/components/family-list";
+import { PuppyGallery } from "@/components/puppy-gallery";
 import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
 import {
@@ -16,7 +17,7 @@ import {
   ShieldCheckIcon,
 } from "@/components/icons";
 import { dogPath, sexLabel } from "@/lib/dogs";
-import { getFamily, getParents } from "@/lib/queries";
+import { getFamily, getParents, getPuppies } from "@/lib/queries";
 import {
   faqs,
   farm,
@@ -41,7 +42,7 @@ const external = { target: "_blank", rel: "noopener noreferrer" } as const;
 export const revalidate = 3600;
 
 export default async function Home() {
-  const [parents, family] = await Promise.all([getParents(), getFamily()]);
+  const [parents, puppies, family] = await Promise.all([getParents(), getPuppies(), getFamily()]);
 
   return (
     <>
@@ -226,8 +227,15 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* PUPPIES (available / reserved) */}
+        <section id="puppies" className={`border-t border-border bg-surface py-18 md:py-24 ${pad}`}>
+          <div className={container}>
+            <PuppyGallery dogs={puppies} />
+          </div>
+        </section>
+
         {/* WHAT PUPPIES GET */}
-        <section id="puppies" className={`border-y border-border bg-surface py-18 md:py-24 ${pad}`}>
+        <section className={`border-y border-border bg-bg py-18 md:py-24 ${pad}`}>
           <div className={`${container} grid gap-12 md:grid-cols-2 md:gap-14`}>
             <div className="flex flex-col gap-4">
               <span className={`${eyebrow} text-yellow-text`}>ลูกสุนัขจะได้รับ</span>
@@ -256,7 +264,7 @@ export default async function Home() {
                 ))}
               </ol>
             </div>
-            <div className="rounded-3xl bg-bg p-6 md:p-8">
+            <div className="rounded-3xl bg-surface p-6 md:p-8">
               <h3 className="font-heading mt-0 mb-[18px] text-xl font-semibold">สิ่งที่น้องได้ฝึกก่อนส่งมอบ</h3>
               <ul className="m-0 grid list-none gap-x-5 gap-y-3 p-0 sm:grid-cols-2">
                 {training.map((t) => (
@@ -310,10 +318,10 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* FAMILY GALLERY */}
+        {/* HALFMOON FAMILY (homed puppies) */}
         <section id="family" className={`border-t border-border bg-surface py-18 md:py-24 ${pad}`}>
           <div className={container}>
-            <FamilyGallery dogs={family} />
+            <FamilyList dogs={family} />
           </div>
         </section>
 

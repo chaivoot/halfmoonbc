@@ -19,7 +19,7 @@ export const navLinks = [
   { href: "/#about", label: "เกี่ยวกับฟาร์ม" },
   { href: "/#parents", label: "พ่อแม่พันธุ์" },
   { href: "/#puppies", label: "ลูกสุนัข" },
-  { href: "/#family", label: "Halfmoon Family" },
+  { href: "/#family", label: "ครอบครัว Halfmoon" },
   { href: "/#faq", label: "คำถามที่พบบ่อย" },
 ];
 

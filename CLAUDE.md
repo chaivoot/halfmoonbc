@@ -63,14 +63,14 @@
 ## 4. หน้าเว็บสาธารณะ (หน้าเดียว scroll + anchor)
 
 ลำดับ section (ข้อความจริงอยู่ใน `design-reference.dc.html`):
-1. Header sticky: wordmark, เมนู (เกี่ยวกับฟาร์ม / พ่อแม่พันธุ์ / ลูกสุนัข / Halfmoon Family / คำถามที่พบบ่อย), ปุ่ม ทัก LINE
+1. Header sticky: wordmark, เมนู (เกี่ยวกับฟาร์ม / พ่อแม่พันธุ์ / ลูกสุนัข / ครอบครัว Halfmoon / คำถามที่พบบ่อย), ปุ่ม ทัก LINE
 2. Hero (พื้นเหลือง): หัวข้อ, จุดขาย (เพดดิกรี FCI, วัคซีน 2 เข็ม, ฝึกพื้นฐาน), ปุ่ม LINE + ดูพ่อแม่พันธุ์, badge จดทะเบียนฟาร์มกับสมาคมฯ
 3. Trust strip 4 ช่อง: FCI / DNA / 2 เข็ม / LINE กลุ่ม
 4. About (พื้นดำ): Hero Pet Farm ก่อตั้ง พ.ศ. 2566, จดทะเบียนกับสมาคมพัฒนาพันธุ์สุนัขแห่งประเทศไทย (ขึ้นตรงกับ FCI), ฟาร์มในตัวเมืองระนอง อากาศเย็นสบาย ไม่มีฝุ่น PM 2.5
 5. พ่อแม่พันธุ์: การ์ดดึงจาก DB (category = parent)
-6. สิ่งที่ลูกสุนัขจะได้รับ + รายการฝึก 9 ข้อ
+6. ลูกสุนัข (`#puppies`): แกลเลอรีน้องที่ยังอยู่ฟาร์ม (ว่าง / จองแล้ว) พร้อมปุ่มดูเฉพาะน้องที่ว่าง แล้วต่อด้วยสิ่งที่ลูกสุนัขจะได้รับ + รายการฝึก 9 ข้อ
 7. ขั้นตอนรับน้อง 4 ขั้น + กล่องราคา
-8. Halfmoon Family: แกลเลอรีดึงจาก DB มีแท็บ New born / Young / Adult และแสดงสถานะ (ว่าง/จองแล้ว)
+8. ครอบครัว Halfmoon (`#family`): น้องที่ย้ายบ้านแล้ว (status = homed) แสดงรูปจากเจ้าของใหม่ จังหวัด ข้อความจากเจ้าของ และ IG ของน้องให้ลูกค้าทักไปถามได้ กดมีบ้านแล้วในหลังบ้าน น้องย้ายมาหัวข้อนี้อัตโนมัติ
 9. FAQ แบบ accordion
 10. ติดต่อ: โทร, LINE, Facebook, Instagram, Google Maps
 11. Footer
@@ -120,8 +120,9 @@ Early Neurological Stimulation (ENS), การอยู่ในพื้นท
 ### Data model (เสนอ)
 `dogs`
 - id (uuid), name, name_th, sex (male/female), color
-- category: `parent` | `newborn` | `young` | `adult`
-- status: `available` | `reserved` | `homed` | null (null สำหรับพ่อแม่พันธุ์)
+- category: `parent` | `newborn` (newborn = ลูกสุนัขทุกตัว; young/adult เลิกใช้แล้วใน migration 007)
+- status: `available` | `reserved` | `homed` | null (null สำหรับพ่อแม่พันธุ์) ลูกสุนัขที่ homed = ครอบครัว Halfmoon
+- instagram (handle ไม่มี @), province, owner_message: ข้อมูลครอบครัว Halfmoon
 - description, tags (text[]), birth_date (nullable), litter (nullable, ชื่อครอก)
 - is_published (bool), sort_order (int), created_at, updated_at
 
@@ -133,7 +134,7 @@ Security: ไม่มี RLS เพราะ DB เข้าถึงได้�
 
 Migrations: ไฟล์ SQL ใน `db/migrations/` รันอัตโนมัติก่อน `next build` (`scripts/migrate.mjs`) แต่ละไฟล์รันครั้งเดียว ห้ามแก้ไฟล์ที่ apply แล้ว ให้เพิ่มไฟล์ใหม่แทน
 `dog_photos.storage_path` เป็น path ใน `public/` (รูปจากเว็บเดิม) หรือ URL เต็มของ Vercel Blob
-ลายน้ำ: รูปน้องหมวด New born / Young / Adult มีลายน้ำ "Halfmoon" จางๆ กลางภาพ (พ่อแม่พันธุ์ไม่มี) browser ใส่ตอนอัปโหลด (`src/lib/prepare-photo.ts`) และ `scripts/watermark.mjs` ใส่ให้รูปที่ `dog_photos.watermarked = false` ทุกครั้งที่ build (ต้องมี `BLOB_READ_WRITE_TOKEN` ตอน build)
+ลายน้ำ: รูปลูกสุนัข (ทุกตัวที่ไม่ใช่พ่อแม่พันธุ์) มีลายน้ำ "Halfmoon" จางๆ กลางภาพ (พ่อแม่พันธุ์ไม่มี) browser ใส่ตอนอัปโหลด (`src/lib/prepare-photo.ts`) และ `scripts/watermark.mjs` ใส่ให้รูปที่ `dog_photos.watermarked = false` ทุกครั้งที่ build (ต้องมี `BLOB_READ_WRITE_TOKEN` ตอน build)
 
 ### Phase 2 (ยังไม่ยืนยัน ถามเจ้าของก่อนทำ)
 - แก้ราคา, FAQ, ข้อความหน้าแรกจาก admin (ตาราง `site_settings`)

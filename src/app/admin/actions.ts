@@ -8,7 +8,7 @@ import { sql } from "@/lib/db";
 import type { AdminPhoto } from "@/lib/admin-dogs";
 import { getPhotos } from "@/lib/admin-dogs";
 import type { DogStatus } from "@/lib/dogs";
-import { isBlobUrl, isCategory, isStatus, isUuid } from "@/lib/validate";
+import { isBlobUrl, isCategory, isStatus, isUuid, toInstagramHandle } from "@/lib/validate";
 
 export type FormState = { error?: string; saved?: boolean } | undefined;
 
@@ -114,6 +114,9 @@ export async function saveDogAction(_: FormState, fd: FormData): Promise<FormSta
     .filter(Boolean)
     .slice(0, 10);
 
+  const instagram = toInstagramHandle(str(fd, "instagram"));
+  if (instagram === undefined) return { error: "Instagram ไม่ถูกต้อง ใส่เป็นชื่อบัญชี เช่น @luna.bordercollie หรือวางลิงก์โปรไฟล์" };
+
   const values = {
     name: str(fd, "name"),
     name_th: optional(fd, "name_th"),
@@ -125,14 +128,21 @@ export async function saveDogAction(_: FormState, fd: FormData): Promise<FormSta
     tags,
     birth_date: birthDate,
     litter: optional(fd, "litter"),
+    instagram,
+    province: optional(fd, "province"),
+    owner_message: optional(fd, "owner_message"),
     is_published: fd.get("is_published") === "on",
   };
 
   if (id) {
-    const [before] = await sql<{ category: string }[]>`select category from dogs where id = ${id}`;
+    const [before] = await sql<{ category: string; status: string | null }[]>`
+      select category, status from dogs where id = ${id}
+    `;
     if (!before) return { error: "ไม่พบข้อมูลสุนัขตัวนี้" };
-    // A dog moved to another category (e.g. New born -> Young) goes to the top of it.
-    const moved = before.category !== category ? { sort_order: await nextSortOrder(category) } : {};
+    // A dog that changes category, or has just gone home (joining ครอบครัว Halfmoon),
+    // goes to the top of its new list.
+    const justHomed = status === "homed" && before.status !== "homed";
+    const moved = before.category !== category || justHomed ? { sort_order: await nextSortOrder(category) } : {};
     const res = await sql`update dogs set ${sql({ ...values, ...moved })} where id = ${id}`;
     if (res.count === 0) return { error: "ไม่พบข้อมูลสุนัขตัวนี้" };
     await ensureSlug(id, values.name);
@@ -151,7 +161,14 @@ export async function saveDogAction(_: FormState, fd: FormData): Promise<FormSta
 export async function setStatusAction(id: string, status: DogStatus) {
   await requireAdmin();
   if (!isUuid(id) || (status !== null && !isStatus(status))) return;
-  await sql`update dogs set status = ${status} where id = ${id} and category <> 'parent'`;
+  // Homed puppies move to ครอบครัว Halfmoon and land on top of it.
+  await sql`
+    update dogs set status = ${status},
+      sort_order = case when ${status}::text = 'homed' and status is distinct from 'homed'
+        then (select coalesce(max(sort_order), 0) + 1 from dogs where category = 'newborn')
+        else sort_order end
+    where id = ${id} and category <> 'parent'
+  `;
   refreshSite();
 }
 

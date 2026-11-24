@@ -15,6 +15,9 @@ export type AdminDog = {
   tags: string[];
   birthDate: string | null;
   litter: string | null;
+  instagram: string | null;
+  province: string | null;
+  ownerMessage: string | null;
   isPublished: boolean;
   coverPhoto: string | null;
   photoCount: number;
@@ -35,6 +38,9 @@ type Row = {
   tags: string[];
   birth_date: string | null;
   litter: string | null;
+  instagram: string | null;
+  province: string | null;
+  owner_message: string | null;
   is_published: boolean;
   cover_photo: string | null;
   photo_count: number;
@@ -53,6 +59,9 @@ const toAdminDog = (r: Row): AdminDog => ({
   tags: r.tags,
   birthDate: r.birth_date,
   litter: r.litter,
+  instagram: r.instagram,
+  province: r.province,
+  ownerMessage: r.owner_message,
   isPublished: r.is_published,
   coverPhoto: r.cover_photo,
   photoCount: r.photo_count,
@@ -62,19 +71,31 @@ const toAdminDog = (r: Row): AdminDog => ({
 const selectDogs = () => sql`
   select d.id, d.slug, d.name, d.name_th, d.sex, d.color, d.category, d.status, d.description,
          d.tags, to_char(d.birth_date, 'YYYY-MM-DD') as birth_date, d.litter, d.is_published,
+         d.instagram, d.province, d.owner_message,
          (select p.storage_path from dog_photos p where p.dog_id = d.id
            order by p.is_cover desc, p.sort_order, p.created_at limit 1) as cover_photo,
          (select count(*)::int from dog_photos p where p.dog_id = d.id) as photo_count
   from dogs d
 `;
 
-export async function listDogs(category: DogCategory | null): Promise<AdminDog[]> {
+// Admin list filters: the same three groups as the website.
+export type DogFilter = "parent" | "puppies" | "family";
+
+export async function listDogs(filter: DogFilter | null): Promise<AdminDog[]> {
+  const where =
+    filter === "parent"
+      ? sql`where d.category = 'parent'`
+      : filter === "puppies"
+        ? sql`where d.category <> 'parent' and d.status is distinct from 'homed'`
+        : filter === "family"
+          ? sql`where d.category <> 'parent' and d.status = 'homed'`
+          : sql``;
   const rows = await sql<Row[]>`
     ${selectDogs()}
-    ${category ? sql`where d.category = ${category}` : sql``}
-    -- Same order as the website: by category, then status, newest on top
-    order by array_position(array['parent','newborn','young','adult'], d.category),
-             coalesce(array_position(array['available','reserved','homed'], d.status), 4), d.sort_order desc, d.created_at desc
+    ${where}
+    -- Same order as the website: parents, then puppies by status (homed last), newest on top
+    order by array_position(array['parent','newborn'], d.category),
+             array_position(array['available','reserved','none','homed'], coalesce(d.status, 'none')), d.sort_order desc, d.created_at desc
   `;
   return rows.map(toAdminDog);
 }
