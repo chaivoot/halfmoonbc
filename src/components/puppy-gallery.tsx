@@ -3,10 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { type Dog, dogPath, galleryTabs, statusLabel } from "@/lib/dogs";
+import { type Dog, dogPath, statusLabel } from "@/lib/dogs";
 import { farm } from "@/lib/site";
-
-type TabId = (typeof galleryTabs)[number]["id"];
 
 const statusStyle = {
   available: "bg-yellow text-ink",
@@ -14,77 +12,52 @@ const statusStyle = {
   homed: "bg-white text-black",
 } as const;
 
-export function FamilyGallery({ dogs }: { dogs: Dog[] }) {
-  const [tab, setTab] = useState<TabId>("newborn");
+// Puppies still at the farm (available or reserved). Homed puppies are listed
+// under ครอบครัว Halfmoon instead.
+export function PuppyGallery({ dogs }: { dogs: Dog[] }) {
   const [availableOnly, setAvailableOnly] = useState(false);
-  const inTab = dogs.filter((d) => d.category === tab);
-  const availableCount = inTab.filter((d) => d.status === "available").length;
-  const shown = availableOnly ? inTab.filter((d) => d.status === "available") : inTab;
+  const availableCount = dogs.filter((d) => d.status === "available").length;
+  const shown = availableOnly ? dogs.filter((d) => d.status === "available") : dogs;
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div className="flex flex-col gap-3">
-          <span className="font-heading text-sm font-semibold tracking-[0.12em] text-yellow-text">
-            HALFMOON FAMILY
-          </span>
-          <h2 className="font-heading m-0 text-[30px] font-bold leading-[1.2] md:text-[40px]">
-            น้องๆ จากฟาร์มของเรา
-          </h2>
-        </div>
-        <div role="tablist" aria-label="ช่วงวัย" className="flex gap-2 rounded-full bg-bg p-1.5">
-          {galleryTabs.map((t) => {
-            const selected = tab === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                id={`tab-${t.id}`}
-                aria-selected={selected}
-                aria-controls="family-panel"
-                onClick={() => setTab(t.id)}
-                className={`min-h-11 cursor-pointer rounded-full px-5 text-[15px] font-semibold ${
-                  selected ? "bg-black text-white" : "bg-transparent text-black hover:bg-border/60"
-                }`}
-              >
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="flex flex-col gap-3">
+        <span className="font-heading text-sm font-semibold tracking-[0.12em] text-yellow-text">ลูกสุนัข</span>
+        <h2 className="font-heading m-0 text-[30px] font-bold leading-[1.2] md:text-[40px]">น้องๆ ที่กำลังหาบ้าน</h2>
       </div>
 
-      <button
-        type="button"
-        aria-pressed={availableOnly}
-        aria-controls="family-panel"
-        onClick={() => setAvailableOnly((v) => !v)}
-        className="-mt-3 inline-flex min-h-11 cursor-pointer items-center gap-3 self-start rounded-full bg-bg py-1.5 pr-4 pl-1.5 text-[15px] font-semibold text-ink"
-      >
-        <span
-          aria-hidden="true"
-          className={`relative h-7 w-12 rounded-full transition-colors ${availableOnly ? "bg-black" : "bg-border"}`}
+      {dogs.length > 0 && (
+        <button
+          type="button"
+          aria-pressed={availableOnly}
+          aria-controls="puppy-panel"
+          onClick={() => setAvailableOnly((v) => !v)}
+          className="-mt-3 inline-flex min-h-11 cursor-pointer items-center gap-3 self-start rounded-full bg-bg py-1.5 pr-4 pl-1.5 text-[15px] font-semibold text-ink"
         >
           <span
-            className={`absolute top-1 left-1 size-5 rounded-full bg-white transition-transform ${
-              availableOnly ? "translate-x-5 bg-yellow" : ""
-            }`}
-          />
-        </span>
-        ดูเฉพาะน้องที่ว่าง ({availableCount})
-      </button>
+            aria-hidden="true"
+            className={`relative h-7 w-12 rounded-full transition-colors ${availableOnly ? "bg-black" : "bg-border"}`}
+          >
+            <span
+              className={`absolute top-1 left-1 size-5 rounded-full bg-white transition-transform ${
+                availableOnly ? "translate-x-5 bg-yellow" : ""
+              }`}
+            />
+          </span>
+          ดูเฉพาะน้องที่ว่าง ({availableCount})
+        </button>
+      )}
 
       <div
-        id="family-panel"
-        role="tabpanel"
-        aria-labelledby={`tab-${tab}`}
+        id="puppy-panel"
         className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-3.5"
       >
         {shown.length === 0 &&
-          (availableOnly ? (
+          (availableOnly || dogs.length === 0 ? (
             <div className="col-span-full flex flex-col items-start gap-3 rounded-2xl bg-bg p-6">
-              <p className="m-0 text-text-2">ตอนนี้ยังไม่มีน้องที่ว่างในหมวดนี้ ทักมาเช็คคิวครอกถัดไปได้เลย</p>
+              <p className="m-0 text-text-2">
+                {dogs.length === 0 ? "ตอนนี้ยังไม่มีลูกสุนัข" : "ตอนนี้ยังไม่มีน้องที่ว่าง"} ทักมาเช็คคิวครอกถัดไปได้เลย
+              </p>
               <a
                 href={farm.lineUrl}
                 target="_blank"
@@ -94,9 +67,7 @@ export function FamilyGallery({ dogs }: { dogs: Dog[] }) {
                 เช็คคิวทาง LINE
               </a>
             </div>
-          ) : (
-            <p className="col-span-full m-0 text-text-2">ยังไม่มีรูปในหมวดนี้</p>
-          ))}
+          ) : null)}
         {shown.map((d) => (
           <figure
             key={d.id}

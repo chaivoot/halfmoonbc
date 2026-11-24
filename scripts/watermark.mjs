@@ -1,5 +1,5 @@
-// Burns the faint "Halfmoon" watermark into gallery photos (New born, Young,
-// Adult) that don't have it yet. Runs after migrations and before `next build`,
+// Burns the faint "Halfmoon" watermark into puppy photos (everything except
+// parents) that don't have it yet. Runs after migrations and before `next build`,
 // so every deploy catches photos the browser couldn't watermark itself.
 // Parent photos are left as they are.
 import { readFile } from "node:fs/promises";

@@ -3,22 +3,27 @@ import Link from "next/link";
 import { AdminHeader, Notice, primaryButton } from "@/components/admin/ui";
 import { DogMoveButtons } from "@/components/admin/dog-move-buttons";
 import { DogQuickActions } from "@/components/admin/dog-quick-actions";
-import { listDogs } from "@/lib/admin-dogs";
+import { type DogFilter, listDogs } from "@/lib/admin-dogs";
 import { requireAdmin } from "@/lib/auth";
-import { categoryLabel, statusRank } from "@/lib/dogs";
-import { categories, isCategory } from "@/lib/validate";
+import { categoryLabel, isFamily, statusRank } from "@/lib/dogs";
 
 export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
   await requireAdmin();
   const params = await searchParams;
-  const category = isCategory(params.c) ? params.c : null;
-  const dogs = await listDogs(category);
+  const filterIds: DogFilter[] = ["puppies", "family", "parent"];
+  const filter = filterIds.find((f) => f === params.c) ?? null;
+  const dogs = await listDogs(filter);
 
   // Dogs only swap places with neighbours of the same category and status.
   const sameGroup = (a?: (typeof dogs)[number], b?: (typeof dogs)[number]) =>
     !!a && !!b && a.category === b.category && statusRank(a.status) === statusRank(b.status);
 
-  const filters = [{ id: null, label: "ทั้งหมด" }, ...categories.map((c) => ({ id: c, label: categoryLabel[c] }))];
+  const filters: { id: DogFilter | null; label: string }[] = [
+    { id: null, label: "ทั้งหมด" },
+    { id: "puppies", label: "ลูกสุนัข" },
+    { id: "family", label: "ครอบครัว Halfmoon" },
+    { id: "parent", label: "พ่อแม่พันธุ์" },
+  ];
 
   return (
     <>
@@ -37,14 +42,14 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-heading m-0 text-3xl font-bold">สุนัขทั้งหมด</h1>
-          <Link href={`/admin/dogs/new${category ? `?c=${category}` : ""}`} className={primaryButton}>
+          <Link href={`/admin/dogs/new${filter === "parent" ? "?c=parent" : ""}`} className={primaryButton}>
             + เพิ่มสุนัข
           </Link>
         </div>
 
         <nav aria-label="กรองตามหมวด" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {filters.map((f) => {
-            const active = f.id === category;
+            const active = f.id === filter;
             return (
               <Link
                 key={f.label}
@@ -76,7 +81,7 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
                       {d.nameTh && <span className="ml-2 text-[15px] font-normal text-text-3">{d.nameTh}</span>}
                     </span>
                     <span className="text-sm text-text-3">
-                      {categoryLabel[d.category]} · {d.photoCount} รูป
+                      {isFamily(d) ? "ครอบครัว Halfmoon" : categoryLabel[d.category]} · {d.photoCount} รูป
                       {!d.isPublished && (
                         <span className="ml-2 rounded-full bg-ink px-2 py-0.5 text-xs text-white">ซ่อนอยู่</span>
                       )}
