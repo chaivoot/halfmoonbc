@@ -23,7 +23,7 @@ export type AdminDog = {
   photoCount: number;
 };
 
-export type AdminPhoto = { id: string; url: string; isCover: boolean };
+export type AdminPhoto = { id: string; url: string; isCover: boolean; isHandover: boolean };
 
 type Row = {
   id: string;
@@ -106,10 +106,10 @@ export async function getDog(id: string): Promise<AdminDog | null> {
 }
 
 export async function getPhotos(dogId: string): Promise<AdminPhoto[]> {
-  const rows = await sql<{ id: string; storage_path: string; is_cover: boolean }[]>`
-    select id, storage_path, is_cover from dog_photos
+  const rows = await sql<{ id: string; storage_path: string; is_cover: boolean; is_handover: boolean }[]>`
+    select id, storage_path, is_cover, is_handover from dog_photos
     where dog_id = ${dogId}
     order by sort_order, created_at
   `;
-  return rows.map((r) => ({ id: r.id, url: r.storage_path, isCover: r.is_cover }));
+  return rows.map((r) => ({ id: r.id, url: r.storage_path, isCover: r.is_cover, isHandover: r.is_handover }));
 }

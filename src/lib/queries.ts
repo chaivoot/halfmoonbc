@@ -77,6 +77,8 @@ export type DogPage = Dog & {
   litter: string | null;
   updatedAt: Date;
   photos: string[];
+  // Photos from the day the dog went home, shown in their own section.
+  handoverPhotos: string[];
 };
 
 // One published dog with all its photos, for /dogs/[slug].
@@ -87,17 +89,21 @@ export async function getDogPage(slug: string): Promise<DogPage | null> {
     where d.slug = ${slug} and d.is_published
   `;
   if (!row) return null;
-  const photos = await sql<{ storage_path: string }[]>`
-    select storage_path from dog_photos
+  const photos = await sql<{ storage_path: string; is_handover: boolean }[]>`
+    select storage_path, is_handover from dog_photos
     where dog_id = ${row.id}
     order by is_cover desc, sort_order, created_at
   `;
+  const regular = photos.filter((p) => !p.is_handover).map((p) => p.storage_path);
+  const handover = photos.filter((p) => p.is_handover).map((p) => p.storage_path);
   return {
     ...toDog(row),
     birthDate: row.birth_date,
     litter: row.litter,
     updatedAt: row.updated_at,
-    photos: photos.map((p) => p.storage_path),
+    // A dog with only handover photos still gets a main gallery.
+    photos: regular.length ? regular : handover,
+    handoverPhotos: regular.length ? handover : [],
   };
 }
 
@@ -110,4 +116,18 @@ export async function getDogSlugs(): Promise<{ slug: string; updatedAt: Date }[]
              array_position(array['available','reserved','none','homed'], coalesce(d.status, 'none')), d.sort_order desc, d.created_at desc
   `;
   return rows.map((r) => ({ slug: r.slug, updatedAt: r.updated_at }));
+}
+
+export type HandoverPhoto = { url: string; slug: string | null; name: string };
+
+// Latest handover photos of published dogs, for the home page strip.
+export async function getHandoverPhotos(limit = 8): Promise<HandoverPhoto[]> {
+  const rows = await sql<{ storage_path: string; slug: string | null; name: string }[]>`
+    select p.storage_path, d.slug, d.name
+    from dog_photos p join dogs d on d.id = p.dog_id
+    where p.is_handover and d.is_published
+    order by p.created_at desc
+    limit ${limit}
+  `;
+  return rows.map((r) => ({ url: r.storage_path, slug: r.slug, name: r.name }));
 }

@@ -127,7 +127,7 @@ Early Neurological Stimulation (ENS), การอยู่ในพื้นท
 - is_published (bool), sort_order (int), created_at, updated_at
 
 `dog_photos`
-- id, dog_id (fk), storage_path, is_cover (bool), sort_order
+- id, dog_id (fk), storage_path, is_cover (bool), sort_order, is_handover (bool, รูปวันส่งมอบ: แสดงในหัวข้อวันรับน้องกลับบ้านของหน้าน้อง และแถบ วันส่งมอบน้อง ในหน้าแรก ต่อจากกล่องราคา ซ่อนเองถ้ายังไม่มีรูป)
 
 Security: ไม่มี RLS เพราะ DB เข้าถึงได้จาก server เท่านั้น หน้า public query เฉพาะ `is_published = true` ทุกหน้า admin และทุก server action ต้องเรียก `requireAdmin()` เอง (server action เป็น endpoint สาธารณะ เช็คที่ layout อย่างเดียวไม่พอ)
 อัปโหลดรูป: browser ย่อรูปแล้วอัปตรงไป Vercel Blob (store แบบ public) ผ่าน token จาก `/api/admin/upload` แล้วค่อยบันทึก URL ลง DB ด้วย `addPhotosAction`

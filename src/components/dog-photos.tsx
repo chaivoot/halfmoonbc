@@ -24,9 +24,17 @@ function Icon({ d }: { d: string }) {
   );
 }
 
-// Dog page photos: a cover and thumbnails that open a full-screen viewer.
-// Swipe (scroll-snap) or use the arrows to move between photos.
-export function DogPhotos({ photos, name }: { photos: string[]; name: string }) {
+// Dog page photos: a cover and thumbnails (or, with layout="grid", thumbnails
+// only) that open a full-screen viewer. Swipe or use the arrows between photos.
+export function DogPhotos({
+  photos,
+  name,
+  layout = "cover",
+}: {
+  photos: string[];
+  name: string;
+  layout?: "cover" | "grid";
+}) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -46,55 +54,63 @@ export function DogPhotos({ photos, name }: { photos: string[]; name: string }) 
     track.scrollTo({ left: next * track.clientWidth, behavior: "smooth" });
   };
 
+  const grid = layout === "grid";
+  const thumbs = grid ? photos : rest;
+  const offset = grid ? 0 : 1;
+
   return (
     <div className="flex flex-col gap-3">
-      <button
-        type="button"
-        onClick={() => open(0)}
-        aria-label={`ดูรูป ${name} แบบเต็มจอ`}
-        className="relative aspect-[4/3] cursor-zoom-in overflow-hidden rounded-3xl bg-placeholder p-0"
-      >
-        <Image
-          src={cover}
-          alt={`${name} บอร์เดอร์คอลลี่`}
-          fill
-          sizes="(max-width: 768px) 100vw, 640px"
-          className="object-cover"
-          loading="eager"
-          fetchPriority="high"
-        />
-        <span className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-black/75 px-3 py-1.5 text-[13px] font-semibold text-white">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-          </svg>
-          {photos.length > 1 ? `ดูรูปทั้งหมด ${photos.length} รูป` : "แตะเพื่อดูรูปใหญ่"}
-        </span>
-      </button>
-      {rest.length > 0 && (
-        <ul className="m-0 grid list-none grid-cols-3 gap-3 p-0">
-          {rest.map((src, i) => (
+      {!grid && (
+        <button
+          type="button"
+          onClick={() => open(0)}
+          aria-label={`ดูรูป ${name} แบบเต็มจอ`}
+          className="relative aspect-[4/3] cursor-zoom-in overflow-hidden rounded-3xl bg-placeholder p-0"
+        >
+          <Image
+            src={cover}
+            alt={`${name} บอร์เดอร์คอลลี่`}
+            fill
+            sizes="(max-width: 768px) 100vw, 640px"
+            className="object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
+          <span className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 rounded-full bg-black/75 px-3 py-1.5 text-[13px] font-semibold text-white">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+            </svg>
+            {photos.length > 1 ? `ดูรูปทั้งหมด ${photos.length} รูป` : "แตะเพื่อดูรูปใหญ่"}
+          </span>
+        </button>
+      )}
+      {thumbs.length > 0 && (
+        <ul
+          className={`m-0 grid list-none gap-3 p-0 ${grid ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4" : "grid-cols-3"}`}
+        >
+          {thumbs.map((src, i) => (
             <li key={src}>
               <button
                 type="button"
-                onClick={() => open(i + 1)}
-                aria-label={`ดูรูปที่ ${i + 2} แบบเต็มจอ`}
+                onClick={() => open(i + offset)}
+                aria-label={`ดูรูปที่ ${i + offset + 1} แบบเต็มจอ`}
                 className="relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-2xl bg-placeholder p-0"
               >
                 <Image
                   src={src}
-                  alt={`${name} รูปที่ ${i + 2}`}
+                  alt={`${name} รูปที่ ${i + offset + 1}`}
                   fill
-                  sizes="(max-width: 768px) 33vw, 210px"
+                  sizes={grid ? "(max-width: 640px) 50vw, 300px" : "(max-width: 768px) 33vw, 210px"}
                   className="object-cover"
                 />
               </button>

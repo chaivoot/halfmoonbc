@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { FamilyList } from "@/components/family-list";
+import { HandoverStrip } from "@/components/handover-strip";
 import { PuppyGallery } from "@/components/puppy-gallery";
 import { JsonLd } from "@/components/json-ld";
 import { SiteFooter } from "@/components/site-footer";
@@ -17,7 +18,7 @@ import {
   ShieldCheckIcon,
 } from "@/components/icons";
 import { dogPath, sexLabel } from "@/lib/dogs";
-import { getFamily, getParents, getPuppies } from "@/lib/queries";
+import { getFamily, getHandoverPhotos, getParents, getPuppies } from "@/lib/queries";
 import {
   faqs,
   farm,
@@ -42,7 +43,12 @@ const external = { target: "_blank", rel: "noopener noreferrer" } as const;
 export const revalidate = 3600;
 
 export default async function Home() {
-  const [parents, puppies, family] = await Promise.all([getParents(), getPuppies(), getFamily()]);
+  const [parents, puppies, family, handover] = await Promise.all([
+    getParents(),
+    getPuppies(),
+    getFamily(),
+    getHandoverPhotos(),
+  ]);
 
   return (
     <>
@@ -317,6 +323,15 @@ export default async function Home() {
             </div>
           </div>
         </section>
+
+        {/* HANDOVER DAY PHOTOS (hidden until there are some) */}
+        {handover.length > 0 && (
+          <section className={`overflow-hidden border-t border-border py-18 md:py-24 ${pad}`}>
+            <div className={container}>
+              <HandoverStrip photos={handover} />
+            </div>
+          </section>
+        )}
 
         {/* HALFMOON FAMILY (homed puppies) */}
         <section id="family" className={`border-t border-border bg-surface py-18 md:py-24 ${pad}`}>

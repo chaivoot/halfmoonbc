@@ -265,6 +265,15 @@ export async function setCoverAction(dogId: string, photoId: string): Promise<Ad
   return getPhotos(dogId);
 }
 
+// Mark a photo as taken on the day the dog went home (or unmark it).
+export async function setHandoverAction(dogId: string, photoId: string, handover: boolean): Promise<AdminPhoto[]> {
+  await requireAdmin();
+  if (!isUuid(dogId) || !isUuid(photoId)) throw new Error("invalid id");
+  await sql`update dog_photos set is_handover = ${handover === true} where dog_id = ${dogId} and id = ${photoId}`;
+  refreshSite();
+  return getPhotos(dogId);
+}
+
 export async function deletePhotoAction(dogId: string, photoId: string): Promise<AdminPhoto[]> {
   await requireAdmin();
   if (!isUuid(dogId) || !isUuid(photoId)) throw new Error("invalid id");
