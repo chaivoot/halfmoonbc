@@ -15,7 +15,13 @@ import { CSS } from "@dnd-kit/utilities";
 import { upload } from "@vercel/blob/client";
 import Image from "next/image";
 import { useRef, useState, useTransition } from "react";
-import { addPhotosAction, deletePhotoAction, reorderPhotosAction, setCoverAction } from "@/app/admin/actions";
+import {
+  addPhotosAction,
+  deletePhotoAction,
+  reorderPhotosAction,
+  setCoverAction,
+  setHandoverAction,
+} from "@/app/admin/actions";
 import { Notice, primaryButton } from "@/components/admin/ui-client";
 import type { AdminPhoto } from "@/lib/admin-dogs";
 import { photoExt, preparePhoto } from "@/lib/prepare-photo";
@@ -27,7 +33,7 @@ export function PhotoManager({
 }: {
   dogId: string;
   initialPhotos: AdminPhoto[];
-  // Gallery dogs get the Halfmoon watermark; parent photos stay clean.
+  // Puppies get the Halfmoon watermark and can have handover photos; parents can't.
   watermark: boolean;
 }) {
   const [photos, setPhotos] = useState(initialPhotos);
@@ -126,6 +132,12 @@ export function PhotoManager({
       ) : (
         <>
           <p className="m-0 text-sm text-text-3">กดค้างที่รูปแล้วลากเพื่อเรียงลำดับ รูปปกคือรูปที่แสดงบนหน้าเว็บ</p>
+          {watermark && (
+            <p className="m-0 text-sm text-text-3">
+              รูปตอนส่งมอบ ขับรถไปส่ง หรือเจ้าของมารับที่ฟาร์ม กด <b className="text-ink">รูปวันส่งมอบ</b> ใต้รูป
+              จะขึ้นในหัวข้อวันรับน้องกลับบ้านและหน้าแรก ถ้ามีหน้าเจ้าของใหม่ในรูป ขออนุญาตเจ้าของก่อนลงทุกครั้ง
+            </p>
+          )}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={photos.map((p) => p.id)} strategy={rectSortingStrategy}>
               <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3">
@@ -135,6 +147,8 @@ export function PhotoManager({
                     photo={p}
                     index={i}
                     disabled={busy}
+                    canHandover={watermark}
+                    onHandover={() => run(() => setHandoverAction(dogId, p.id, !p.isHandover))}
                     onCover={() => run(() => setCoverAction(dogId, p.id))}
                     onDelete={() => {
                       if (confirm("ลบรูปนี้?")) run(() => deletePhotoAction(dogId, p.id));
@@ -154,12 +168,16 @@ function SortablePhoto({
   photo,
   index,
   disabled,
+  canHandover,
+  onHandover,
   onCover,
   onDelete,
 }: {
   photo: AdminPhoto;
   index: number;
   disabled: boolean;
+  canHandover: boolean;
+  onHandover: () => void;
   onCover: () => void;
   onDelete: () => void;
 }) {
@@ -184,7 +202,28 @@ function SortablePhoto({
             รูปปก
           </span>
         )}
+        {photo.isHandover && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-black px-2.5 py-0.5 text-xs font-semibold text-white">
+            วันส่งมอบ
+          </span>
+        )}
       </div>
+      {canHandover && (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onHandover}
+          aria-pressed={photo.isHandover}
+          className={`flex min-h-11 cursor-pointer items-center justify-center gap-1.5 border-b border-border text-sm font-semibold disabled:opacity-50 ${
+            photo.isHandover ? "bg-black text-white" : "text-black hover:bg-bg"
+          }`}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            {photo.isHandover ? <path d="M5 12l5 5L20 7" /> : <path d="M12 5v14M5 12h14" />}
+          </svg>
+          รูปวันส่งมอบ
+        </button>
+      )}
       <div className="flex">
         {!photo.isCover && (
           <button

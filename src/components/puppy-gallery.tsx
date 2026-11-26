@@ -22,7 +22,7 @@ export function PuppyGallery({ dogs }: { dogs: Dog[] }) {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
-        <span className="font-heading text-sm font-semibold tracking-[0.12em] text-yellow-text">ลูกสุนัข</span>
+        <span className="font-heading text-sm font-semibold text-yellow-text">ลูกสุนัข</span>
         <h2 className="font-heading m-0 text-[30px] font-bold leading-[1.2] md:text-[40px]">น้องๆ ที่กำลังหาบ้าน</h2>
       </div>
 

@@ -214,6 +214,18 @@ export default async function DogPageRoute({ params }: PageProps<"/dogs/[slug]">
               </Link>
             </div>
           </div>
+
+          {dog.handoverPhotos.length > 0 && (
+            <section aria-labelledby="handover" className="flex flex-col gap-4 border-t border-border pt-8">
+              <div className="flex flex-col gap-1.5">
+                <span className="font-heading text-sm font-semibold text-yellow-text">วันส่งมอบ</span>
+                <h2 id="handover" className="font-heading m-0 text-[26px] font-bold md:text-[32px]">
+                  วันรับ {dog.name} กลับบ้าน
+                </h2>
+              </div>
+              <DogPhotos photos={dog.handoverPhotos} name={`วันรับ ${dog.name} กลับบ้าน`} layout="grid" />
+            </section>
+          )}
         </div>
       </main>
       <SiteFooter />
